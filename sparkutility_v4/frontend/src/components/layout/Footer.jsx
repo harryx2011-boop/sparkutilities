@@ -99,7 +99,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="flex items-center gap-4">
-            <span className="text-xs text-muted-foreground">SparkUtilitiesLLC©</span>
+            <span className="text-xs text-muted-foreground">© SparkUtilities</span>
             <div className="flex items-center gap-3">
               {/* Discord */}
               <div className="relative group cursor-default">

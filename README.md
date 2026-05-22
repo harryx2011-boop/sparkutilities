@@ -19,17 +19,9 @@ sparkutility_v4/
 ```bash
 cd sparkutility_v4/backend
 cp .env.example .env
-# Edit .env with your own ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_SESSION_SECRET.
-# ADMIN_SESSION_SECRET must be at least 32 characters or the admin panel
-# silently disables itself.
+# Edit .env if you need to override defaults (CORS origins, yt-dlp path, etc.).
 npm install
 npm start
-```
-
-Generate a strong session secret:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 ### Frontend
