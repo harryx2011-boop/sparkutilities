@@ -1,0 +1,14 @@
+# Never commit real credentials
+.env
+.env.local
+.env.*.local
+
+node_modules/
+
+# Runtime data (analytics, admin state, etc.)
+data/*.json
+!data/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*

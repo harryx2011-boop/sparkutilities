@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+**/dist/
+**/build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*/.env
+*/.env.local
+*/.env.production
+
+# Runtime / generated data
+backend/data/*.json
+**/backend/data/*.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Caches
+.cache/
+.parcel-cache/
+.vite/
+.eslintcache
+
+# Local Claude config (project-private dev notes, AI assistant config,
+# embedded third-party skill repos — not appropriate for a public repo)
+.claude/
+**/.claude/
+CLAUDE.md
+**/CLAUDE.md
+
+# Misc
+*.tsbuildinfo
+coverage/

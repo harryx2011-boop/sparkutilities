@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#8B5CF6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="SparkUtilities" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @font-face {
+        font-family: 'OpenDyslexic';
+        src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
+             url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.woff') format('woff');
+        font-weight: 400;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'OpenDyslexic';
+        src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Bold.woff2') format('woff2'),
+             url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Bold.woff') format('woff');
+        font-weight: 700;
+        font-display: swap;
+      }
+      body.dyslexia-font, body.dyslexia-font * {
+        font-family: 'OpenDyslexic', sans-serif !important;
+        letter-spacing: 0.05em;
+        line-height: 1.75;
+        word-spacing: 0.15em;
+      }
+    </style>
+    <title>SparkUtilities — All-In-One Utility Hub | Local File Converter, No Uploads</title>
+    <meta name="description" content="Convert video, audio, image, and document files locally on your machine. No uploads, no file size limits, 100% private. Powered by FFmpeg." />
+    <meta name="keywords" content="file converter, local converter, FFmpeg, MTS to MP4, PNG to WebP, video converter, audio converter, image converter, privacy, no upload, free" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SparkUtilities — Free Local File Converter" />
+    <meta property="og:description" content="Professional-grade file conversion. No uploads, no limits, 100% private." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1200&q=80" />
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SparkUtilities",
+      "description": "Free local file converter. Convert video, audio, images, and documents without uploading. No file size limits.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/Main.jsx"></script>
+  </body>
+</html>

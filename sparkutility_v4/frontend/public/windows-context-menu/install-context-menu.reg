@@ -1,0 +1,12 @@
+Windows Registry Editor Version 5.00
+
+; SparkUtilities — Windows Explorer right-click entry
+; Adds "Convert with SparkUtilities" to every file's context menu.
+; Run as a normal user (writes to HKEY_CURRENT_USER).
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\SparkUtilities]
+@="Convert with SparkUtilities"
+"Icon"="\"%SystemRoot%\\System32\\shell32.dll\",43"
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\SparkUtilities\command]
+@="cmd.exe /c start \"\" \"https://sparkutilities.dev/file-converter?source=context-menu\""
