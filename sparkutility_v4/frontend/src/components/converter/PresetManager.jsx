@@ -62,8 +62,6 @@ export default function PresetManager({ category, current, onApply }) {
       setCopiedId(id);
       setTimeout(() => setCopiedId(c => (c === id ? null : c)), 1400);
     } catch {
-      // Clipboard may be unavailable (insecure context). Fall back silently —
-      // user can re-try; we keep the UI honest and don't pretend it copied.
       setCopiedId(null);
     }
   };

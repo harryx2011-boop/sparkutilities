@@ -7,16 +7,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-/**
- * Searchable format selector. Accepts uppercase format strings (e.g. 'MP4', 'WAV').
- * Props:
- *   value     — selected format (uppercase) or '' for none
- *   onChange  — called with newly selected format (uppercase), or '' to deselect
- *   formats   — array of uppercase format strings
- *   placeholder — shown when nothing selected
- *   sourceExt — source file extension (uppercase); renders "(keep)" label in list
- *   disabled  — disables the trigger button
- */
 export default function FormatCombobox({ value, onChange, formats, placeholder, sourceExt, disabled }) {
   const [open, setOpen] = useState(false);
 

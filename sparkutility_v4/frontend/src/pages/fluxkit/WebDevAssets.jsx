@@ -7,13 +7,11 @@ import {
 } from 'lucide-react';
 import FluxBackdrop from '@/components/fluxkit/FluxBackdrop';
 
-/* ─── Design tokens ─────────────────────────────────────────────────────────── */
 const FH   = { fontFamily: '"Cormorant Garamond","Georgia",serif', fontWeight: 700, letterSpacing: '-0.02em' };
 const FB   = { fontFamily: '"Montserrat","Inter",sans-serif' };
 const FM   = { fontFamily: '"JetBrains Mono",monospace' };
 const GOLD = '#FACC15';
 
-/* ─── Shared primitives ─────────────────────────────────────────────────────── */
 function useCopy(timeout = 1800) {
   const [copied, setCopied] = useState(false);
   const copy = useCallback((text) => {
@@ -130,7 +128,6 @@ function StatusBanner({ type, message }) {
   );
 }
 
-/* ─── Helpers ───────────────────────────────────────────────────────────────── */
 function hexToRgb(hex) {
   const c = hex.replace('#', '');
   const full = c.length === 3 ? c.split('').map(x => x + x).join('') : c.padEnd(6, '0');
@@ -155,7 +152,6 @@ function rgbToHsl(r, g, b) {
   return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
 }
 
-/* ─── 1. CSS Glassmorphism Generator ─────────────────────────────────────────── */
 function GlassmorphismGenerator() {
   const [blur, setBlur]             = useState(12);
   const [saturation, setSaturation] = useState(180);
@@ -214,7 +210,6 @@ function GlassmorphismGenerator() {
   );
 }
 
-/* ─── 2. SVG Path Optimizer ──────────────────────────────────────────────────── */
 function optimizeSVG(raw, opts) {
   let svg = raw;
   if (opts.removeXmlDecl)    svg = svg.replace(/<\?xml[^?]*\?>\s*/gi, '');
@@ -295,7 +290,6 @@ function SVGOptimizer() {
   );
 }
 
-/* ─── 3. Flexbox / Grid Playground ──────────────────────────────────────────── */
 const ITEM_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f97316','#10b981','#06b6d4','#f59e0b','#ef4444'];
 
 const FLEX_OPTIONS = {
@@ -354,7 +348,6 @@ function FlexGridPlayground() {
   return (
     <ToolPanel title="Flexbox / Grid Playground" icon={LayoutGrid} code="css.layout()" chips={['Interactive','Visual preview','Flexbox','CSS Grid']}>
       <div className="mt-4 space-y-5">
-        {/* Mode + item count */}
         <div className="flex items-center gap-3 flex-wrap">
           {['flex', 'grid'].map(m => (
             <button key={m} onClick={() => setMode(m)}
@@ -373,7 +366,6 @@ function FlexGridPlayground() {
           </div>
         </div>
 
-        {/* Controls */}
         {mode === 'flex' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <PillGroup label="flex-direction"  options={FLEX_OPTIONS.flexDirection}  value={fd}  onChange={setFd} />
@@ -392,7 +384,6 @@ function FlexGridPlayground() {
           </div>
         )}
 
-        {/* Preview */}
         <div>
           <span style={{ ...FM, fontSize: '0.65rem', color: 'rgba(200,190,170,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Live Preview</span>
           <div className="mt-2 rounded-xl p-3 overflow-auto"
@@ -412,7 +403,6 @@ function FlexGridPlayground() {
   );
 }
 
-/* ─── 4. Hex → RGBA / HSLA Converter ─────────────────────────────────────────── */
 function isValidHex(h) { return /^#[0-9a-fA-F]{6}$/.test(h) || /^#[0-9a-fA-F]{3}$/.test(h); }
 
 function HexToColor() {
@@ -483,7 +473,6 @@ background-color: rgba(var(--color-rgb), 0.1);`;
   );
 }
 
-/* ─── 5. Custom Scrollbar Generator ─────────────────────────────────────────── */
 const SB_SCOPE = 'fluxkit-sb-preview';
 
 function ScrollbarGenerator() {
@@ -563,9 +552,6 @@ function ScrollbarGenerator() {
     </ToolPanel>
   );
 }
-
-/* ─── Page ───────────────────────────────────────────────────────────────────── */
-// ── 6. Advanced Palette Generator ────────────────────────────────────────────
 
 const HARMONY_MODES = [
   { id: 'mono',        label: 'Monochromatic' },
@@ -671,8 +657,6 @@ function PaletteGenerator() {
     </ToolPanel>
   );
 }
-
-// ── 6b. Color Palette Generator (comprehensive) ─────────────────────────────
 
 function rotateHue(h, deg) { return ((h + deg) % 360 + 360) % 360; }
 
@@ -886,7 +870,6 @@ function ColorPaletteGenerator() {
   );
 }
 
-// ── 7. Contrast Checker (A11y) ────────────────────────────────────────────────
 
 function relativeLuminance(hex) {
   const r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
@@ -966,7 +949,6 @@ function ContrastChecker() {
   );
 }
 
-// ── 8. Font Pairing Tool ──────────────────────────────────────────────────────
 
 const FONT_PAIRS = [
   { display: 'Playfair Display', body: 'Lato',          style: 'Editorial', desc: 'Classic editorial — luxury magazines and long-form articles.' },

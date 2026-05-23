@@ -1,18 +1,3 @@
-// Tiny recursive-descent math expression evaluator. Used by the LaTeX
-// Builder's scientific + graphing calculators. Designed to be safe — never
-// uses eval() or new Function() — and small enough to leave inline in any
-// chunk. Grammar:
-//
-//   expr     := term (('+'|'-') term)*
-//   term     := factor (('*'|'/'|'%') factor)*
-//   factor   := unary ('^' factor)?      ← right-associative, like math
-//   unary    := ('+'|'-')? primary
-//   primary  := NUMBER | NAME | NAME '(' arglist ')' | '(' expr ')' | '|' expr '|'
-//   arglist  := expr (',' expr)*
-//
-// Implicit multiplication is supported: `2x` → `2*x`, `2(x+1)` → `2*(x+1)`,
-// and `xy` → `x*y` only when both are single-letter known names.
-
 const FUNCTIONS = {
   sin:   Math.sin,
   cos:   Math.cos,
@@ -49,14 +34,12 @@ const CONSTANTS = {
   nan:   NaN,
 };
 
-// ── Tokeniser ─────────────────────────────────────────────────────────────
 function tokenise(src) {
   const tokens = [];
   let i = 0;
   while (i < src.length) {
     const c = src[i];
     if (/\s/.test(c)) { i++; continue; }
-    // number — digits with optional decimal + exponent
     if (/[0-9.]/.test(c)) {
       let j = i;
       while (j < src.length && /[0-9.]/.test(src[j])) j++;
@@ -73,7 +56,6 @@ function tokenise(src) {
       i = j;
       continue;
     }
-    // name — letters and underscores
     if (/[a-zA-Z_]/.test(c)) {
       let j = i;
       while (j < src.length && /[a-zA-Z0-9_]/.test(src[j])) j++;
@@ -81,7 +63,6 @@ function tokenise(src) {
       i = j;
       continue;
     }
-    // single-character operators
     if ('+-*/^%(),|'.indexOf(c) >= 0) {
       tokens.push({ type: c });
       i++;
@@ -93,7 +74,6 @@ function tokenise(src) {
   return tokens;
 }
 
-// ── Parser → AST ──────────────────────────────────────────────────────────
 function parse(tokens) {
   let pos = 0;
   const peek  = () => tokens[pos];
@@ -118,9 +98,7 @@ function parse(tokens) {
       const op = peek().type; pos++;
       left = { kind: 'binop', op, l: left, r: factor() };
     }
-    // Implicit multiplication: number/name followed by name or '(' or '|'
     while (peek().type === 'name' || peek().type === '(' || peek().type === '|' || peek().type === 'num') {
-      // Don't fold: `5 5` should error rather than become `5*5` silently
       if (left.kind === 'num' && peek().type === 'num') break;
       left = { kind: 'binop', op: '*', l: left, r: factor() };
     }
@@ -131,7 +109,7 @@ function parse(tokens) {
     const u = unary();
     if (peek().type === '^') {
       pos++;
-      return { kind: 'binop', op: '^', l: u, r: factor() }; // right-assoc
+      return { kind: 'binop', op: '^', l: u, r: factor() };
     }
     return u;
   }
@@ -181,7 +159,6 @@ function parse(tokens) {
   return root;
 }
 
-// ── Evaluator ─────────────────────────────────────────────────────────────
 function evalNode(node, env) {
   switch (node.kind) {
     case 'num':  return node.value;
@@ -215,32 +192,23 @@ function evalNode(node, env) {
   }
 }
 
-// ── Public API ────────────────────────────────────────────────────────────
-// `evaluate(source, env?)` — parses and evaluates `source`, with optional
-// variable bindings in `env`. Returns a JS number. Throws Error on bad input.
 export function evaluate(source, env) {
   const tokens = tokenise(source);
   const ast    = parse(tokens);
   return evalNode(ast, env);
 }
 
-// `compile(source)` — parses once, returns a fast evaluator that takes only
-// the env. Used by the graphing calculator to plot many x-values without
-// re-parsing the same expression each frame.
 export function compile(source) {
   const tokens = tokenise(source);
   const ast    = parse(tokens);
   return (env) => evalNode(ast, env);
 }
 
-// `tryEvaluate(source, env?)` — returns { value, error } instead of throwing.
-// Convenient inside React render paths.
 export function tryEvaluate(source, env) {
   try { return { value: evaluate(source, env), error: null }; }
   catch (e) { return { value: null, error: e.message }; }
 }
 
-// `tryCompile(source)` — same convention for the compile path.
 export function tryCompile(source) {
   try { return { fn: compile(source), error: null }; }
   catch (e) { return { fn: null, error: e.message }; }

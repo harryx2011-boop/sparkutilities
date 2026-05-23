@@ -14,34 +14,15 @@ function readHistory() {
   }
 }
 
-/**
- * Reads `sparkutility_history_v1` and returns memoised aggregates for the Home
- * activity dashboard. Subscribes to the `storage` event so the dashboard stays
- * in sync across tabs. Returns null when the history is empty so the caller
- * can skip rendering the section entirely.
- *
- * @returns {{
- *   total: number,
- *   weekTotal: number,
- *   totalBytes: number,
- *   topFormat: string | null,
- *   topCategory: string | null,
- *   daily: number[]   // length 14, oldest first
- * } | null}
- */
 export function useConversionStats() {
   const [history, setHistory] = useState(readHistory);
 
   useEffect(() => {
-    // Refresh whenever the key changes in another tab.
     const onStorage = (e) => {
       if (e.key !== HISTORY_KEY) return;
       setHistory(readHistory());
     };
     window.addEventListener('storage', onStorage);
-
-    // Same-tab refresh: re-read on focus, since the history can be mutated by
-    // FileConverter mid-session without dispatching a storage event.
     const onFocus = () => setHistory(readHistory());
     window.addEventListener('focus', onFocus);
 
@@ -56,15 +37,11 @@ export function useConversionStats() {
 
     const now = Date.now();
     const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-
     let weekTotal = 0;
     let totalBytes = 0;
     const formatCounts = new Map();
     const categoryCounts = new Map();
     const daily = new Array(14).fill(0);
-
-    // Anchor the 14-day window to "today, end of day local" so the rightmost
-    // bar always represents today.
     const today = new Date();
     today.setHours(23, 59, 59, 999);
     const dayMs = 24 * 60 * 60 * 1000;

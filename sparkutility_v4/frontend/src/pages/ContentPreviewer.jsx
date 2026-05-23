@@ -9,7 +9,6 @@ import { useToolTheme } from '@/context/ToolThemeContext';
 import { useSettings } from '@/context/SettingsContext';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
-// ─── URL Preview helpers ─────────────────────────────────────────────────────
 const URL_PREVIEW_HISTORY_KEY = 'sparkutility_url_preview_history';
 const URL_PREVIEW_HISTORY_MAX = 5;
 
@@ -37,7 +36,6 @@ function saveHistory(list) {
   } catch {}
 }
 
-// ─── Preview card variants ───────────────────────────────────────────────────
 function TwitterPreviewCard({ data }) {
   return (
     <div className="rounded-2xl overflow-hidden border border-border/60 bg-card max-w-md">
@@ -111,8 +109,6 @@ function IMessagePreviewCard({ data }) {
   );
 }
 
-// ─── Platform safe-zone definitions ──────────────────────────────────────────
-// All values as percentages of the video frame
 const SAFE_ZONES = {
   tiktok: {
     label: 'TikTok',
@@ -175,7 +171,6 @@ const SAFE_ZONES = {
   },
 };
 
-// ─── Social preview mock UIs ──────────────────────────────────────────────────
 function TikTokMock({ videoSrc, thumbnail, playing, onToggle }) {
   return (
     <div className="relative rounded-2xl overflow-hidden bg-black select-none" style={{ width: 220, height: 390, flexShrink: 0 }}>
@@ -186,14 +181,11 @@ function TikTokMock({ videoSrc, thumbnail, playing, onToggle }) {
           <Video className="w-8 h-8 text-neutral-600" />
         </div>
       )}
-      {/* Overlay UI */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
-      {/* Top bar */}
       <div className="absolute top-3 left-0 right-0 flex items-center justify-center gap-6 text-white text-xs font-semibold">
         <span className="opacity-60">Following</span>
         <span className="border-b-2 border-white pb-0.5">For You</span>
       </div>
-      {/* Right actions */}
       <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4">
         <div className="w-8 h-8 rounded-full bg-neutral-700 border-2 border-white overflow-hidden flex items-center justify-center">
           <div className="w-3 h-3 rounded-full bg-primary" />
@@ -205,7 +197,6 @@ function TikTokMock({ videoSrc, thumbnail, playing, onToggle }) {
           </div>
         ))}
       </div>
-      {/* Bottom text */}
       <div className="absolute bottom-3 left-3 right-12 text-white">
         <p className="text-xs font-bold mb-0.5">@yourusername</p>
         <p className="text-[10px] opacity-80 line-clamp-2">Your caption goes here #fyp #trending</p>
@@ -214,7 +205,6 @@ function TikTokMock({ videoSrc, thumbnail, playing, onToggle }) {
           <span className="text-[10px] opacity-70">Original audio - username</span>
         </div>
       </div>
-      {/* Bottom nav */}
       <div className="absolute bottom-0 left-0 right-0 flex justify-around items-center py-2 bg-black/40 border-t border-white/10">
         {['🏠', '🔍', '+', '📥', '👤'].map((icon, i) => (
           <span key={i} className={`text-base ${i === 2 ? 'bg-white text-black rounded-md px-2 py-0.5 text-xs font-bold' : ''}`}>{icon}</span>
@@ -289,7 +279,6 @@ function TwitterMock({ thumbnail }) {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
 export default function ContentPreviewer() {
   const { getToolGradient } = useToolTheme();
   const toolGradient = getToolGradient('/content-previewer');
@@ -307,7 +296,6 @@ export default function ContentPreviewer() {
   const [duration, setDuration] = useState(0);
   const [thumbCaptured, setThumbCaptured] = useState(false);
 
-  // ─── URL preview state ─────────────────────────────────────────────────────
   const [urlInput, setUrlInput] = useState('');
   const [urlPreviewData, setUrlPreviewData] = useState(null);
   const [urlLoading, setUrlLoading] = useState(false);
@@ -410,8 +398,6 @@ export default function ContentPreviewer() {
     if (f) loadFile(f);
   };
 
-  // Space to toggle play/pause on the loaded preview video. Mirrors the
-  // Audio Modifier convention; user-remappable via Settings → Keybinds.
   const { settings } = useSettings();
   useKeyboardShortcuts({
     [settings?.keybinds?.previewerPlayPause ?? 'Space']: () => {
@@ -433,7 +419,6 @@ export default function ContentPreviewer() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      {/* Hero */}
       <section className="relative py-14 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-20"
@@ -472,7 +457,6 @@ export default function ContentPreviewer() {
         </div>
       </section>
 
-      {/* Mode toggle */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}
         className="glass-card rounded-2xl p-1 flex gap-1 mb-5 max-w-md mx-auto relative">
         {[
@@ -610,7 +594,6 @@ export default function ContentPreviewer() {
       )}
 
       {mode === 'video' && !file ? (
-        // Drop zone
         <motion.label initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
           onDrop={onDrop}
           onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
@@ -640,7 +623,6 @@ export default function ContentPreviewer() {
         </motion.label>
       ) : mode === 'video' && file ? (
         <div className="space-y-5">
-          {/* File bar */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             className="glass-card rounded-2xl p-4 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -673,7 +655,6 @@ export default function ContentPreviewer() {
             </button>
           </motion.div>
 
-          {/* Tab bar */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
             className="glass-card rounded-2xl p-1 flex gap-1 relative">
             {TABS.map(({ id, label, icon: Icon }) => {
@@ -725,7 +706,6 @@ export default function ContentPreviewer() {
                 </div>
               </div>
 
-              {/* Video + overlays */}
               <div className="flex justify-center">
                 <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl"
                   style={{ aspectRatio: frameAspect, maxHeight: '70vh', maxWidth: frameAspect === '9/16' ? 340 : '100%', width: '100%' }}>
@@ -735,7 +715,6 @@ export default function ContentPreviewer() {
                     onPause={() => setPlaying(false)}
                     loop playsInline />
 
-                  {/* Safe zone overlays */}
                   {showZones && zone.zones.map((z, i) => (
                     <div key={i} className="absolute pointer-events-none"
                       style={{
@@ -747,7 +726,6 @@ export default function ContentPreviewer() {
                       }} />
                   ))}
 
-                  {/* Zone labels */}
                   {showZones && (
                     <div className="absolute top-2 left-2">
                       <div className="text-[10px] font-bold px-2 py-1 rounded-lg text-white"
@@ -757,7 +735,6 @@ export default function ContentPreviewer() {
                     </div>
                   )}
 
-                  {/* Play button overlay */}
                   <button onClick={() => videoRef.current?.[playing ? 'pause' : 'play']()}
                     className="absolute inset-0 flex items-center justify-center group">
                     <div className={`w-14 h-14 rounded-full bg-black/50 flex items-center justify-center transition-opacity ${playing ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
@@ -767,7 +744,6 @@ export default function ContentPreviewer() {
                 </div>
               </div>
 
-              {/* Legend */}
               {showZones && (
                 <div className="glass-card rounded-2xl p-4">
                   <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Overlay Legend</p>
@@ -787,7 +763,6 @@ export default function ContentPreviewer() {
             </motion.div>
           )}
 
-          {/* Social Previews tab */}
           {activeTab === 'social' && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
               <div className="glass-card rounded-2xl p-4">
@@ -823,12 +798,10 @@ export default function ContentPreviewer() {
             </motion.div>
           )}
 
-          {/* Thumbnail Builder tab */}
           {activeTab === 'thumbnail' && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
               <div className="glass-card rounded-2xl p-5 space-y-4">
                 <p className="text-sm font-semibold">Capture a frame as thumbnail</p>
-                {/* Scrubber */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-muted-foreground font-mono">
                     <span>0:00</span>
@@ -838,7 +811,6 @@ export default function ContentPreviewer() {
                   <input type="range" min={0} max={duration || 100} step={0.1} value={thumbTime}
                     onChange={handleSeek} className="w-full accent-primary" />
                 </div>
-                {/* Hidden video for frame capture */}
                 <video ref={videoRef} src={videoSrc} className="w-full rounded-xl max-h-64 object-contain bg-black"
                   onLoadedMetadata={e => setDuration(e.target.duration)} playsInline />
                 <canvas ref={canvasRef} className="hidden" />

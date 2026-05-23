@@ -9,8 +9,6 @@ import { parseTimecode, formatTimecode } from '@/lib/timecode';
 export default function VideoTrimmer({ trim, onChange, getPreviewTime, getDuration }) {
   const [open, setOpen] = useState(trim?.enabled || false);
 
-  // When the preview reports a duration we didn't know about, default the
-  // end value so the user has something sensible to start from.
   useEffect(() => {
     if (!trim?.enabled) return;
     if (trim?.end) return;
@@ -25,7 +23,6 @@ export default function VideoTrimmer({ trim, onChange, getPreviewTime, getDurati
     update({ [field]: formatTimecode(t) });
   };
 
-  // Validation — derived once for the inline error.
   const startSec = parseTimecode(trim?.start);
   const endSec = parseTimecode(trim?.end);
   const startValid = trim?.start === '' || trim?.start === undefined || Number.isFinite(startSec);

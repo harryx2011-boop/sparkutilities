@@ -11,16 +11,10 @@ import { Link } from 'react-router-dom';
 import FluxBackdrop from '@/components/fluxkit/FluxBackdrop';
 import { tryEvaluate, tryCompile } from '@/lib/mathEval';
 
-// ── Design tokens ─────────────────────────────────────────────────────────
 const GOLD = '#FACC15';
 const FH   = "'Cormorant Garamond', Georgia, serif";
 const FB   = "'Montserrat', system-ui, sans-serif";
 
-// ── Symbol palette ─────────────────────────────────────────────────────────
-// Each entry has a `name` field used by the search input — when a query is
-// active, every group is filtered down to symbols whose name OR latex
-// substring-matches the query (case-insensitive). Groups with no matches
-// are hidden so the panel stays tight.
 const SYMBOL_GROUPS = [
   {
     label: 'Greek', symbols: [
@@ -115,12 +109,6 @@ const SYMBOL_GROUPS = [
   },
 ];
 
-// ── LaTeX template library ─────────────────────────────────────────────────
-// These templates were previously slash-commands in the global SparkEngine
-// (/sum, /int, /matrix, /frac, /sqrt, /limit, etc.). They live here now and
-// surface through the LaTeX-Builder-internal SparkEngine search bar at the
-// top of the right column. `cursorBack` lands the caret inside an empty
-// {} placeholder so the user can type the contents immediately.
 const LATEX_TEMPLATES = [
   { trigger: '/sum',       label: '∑ summation',          latex: '\\sum_{n=1}^{\\infty} ',                                  cursorBack: 0  },
   { trigger: '/int',       label: '∫ integral',           latex: '\\int_{a}^{b} f(x)\\,dx',                                  cursorBack: 0  },
@@ -141,11 +129,6 @@ const LATEX_TEMPLATES = [
   { trigger: '/tilde',     label: 'Tilde',                latex: '\\tilde{}',                                                 cursorBack: 1  },
 ];
 
-// ── Matrix builder ─────────────────────────────────────────────────────────
-// Editable cell grid. Cells default to `a_{ij}` placeholder LaTeX so an empty
-// build still inserts something sensible; users can override any cell. The
-// row-separator was previously rendered with 4 backslashes (`\\\\` in source)
-// which produced an extra blank row in KaTeX — now correctly emits `\\`.
 function MatrixBuilder({ onInsert }) {
   const [rows, setRows] = useState(2);
   const [cols, setCols] = useState(2);
@@ -154,7 +137,6 @@ function MatrixBuilder({ onInsert }) {
     Array.from({ length: 2 }, () => Array.from({ length: 2 }, () => ''))
   );
 
-  // Resize cell grid when rows/cols change, preserving entered values
   useEffect(() => {
     setCells(prev =>
       Array.from({ length: rows }, (_, r) =>
@@ -213,7 +195,6 @@ function MatrixBuilder({ onInsert }) {
         </select>
       </div>
 
-      {/* Editable cell grid */}
       <div className="grid gap-1 p-2 bg-neutral-900 rounded-lg border border-amber-900/20"
            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {cells.map((row, r) =>
@@ -240,12 +221,6 @@ function MatrixBuilder({ onInsert }) {
   );
 }
 
-// ── Scientific Calculator ─────────────────────────────────────────────────
-// A real, evaluating calculator. The display shows the current expression
-// and the most recent computed result. Buttons append tokens to the
-// expression string (numbers, operators, function-call openers like 'sin(').
-// Pressing = parses the expression with mathEval and displays the answer.
-// Pressing "Send to LaTeX" pushes the rendered LaTeX into the parent editor.
 function ScientificCalculator({ onSendToEditor }) {
   const [expr, setExpr]       = useState('');
   const [result, setResult]   = useState('');
@@ -279,8 +254,6 @@ function ScientificCalculator({ onSendToEditor }) {
     setHistory(h => [{ expr, result: formatted, ts: Date.now() }, ...h].slice(0, 8));
   }, [expr]);
 
-  // Derived live result — shows a faint preview while typing if the
-  // expression is currently parseable. Cleared on parse failure.
   const livePreview = useMemo(() => {
     if (!expr.trim() || expr === result) return '';
     const r = tryEvaluate(expr);
@@ -302,7 +275,6 @@ function ScientificCalculator({ onSendToEditor }) {
 
   return (
     <div className="rounded-2xl border border-amber-900/30 bg-neutral-950 overflow-hidden">
-      {/* Display */}
       <div className="px-4 py-3 border-b border-amber-900/20" style={{ background: 'rgba(250,204,21,0.04)' }}>
         <p className="text-[10px] uppercase tracking-widest text-amber-400/60 font-mono mb-1">Expression</p>
         <p className="text-base font-mono text-neutral-100 break-all min-h-[1.5rem]">{expr || <span className="text-neutral-600">type or tap…</span>}</p>
@@ -320,21 +292,18 @@ function ScientificCalculator({ onSendToEditor }) {
       </div>
 
       <div className="p-3 space-y-1.5">
-        {/* Function row 1: trig + log */}
         <div className="grid grid-cols-5 gap-1.5">
           {[
             { l: 'sin', i: 'sin(' }, { l: 'cos', i: 'cos(' }, { l: 'tan', i: 'tan(' },
             { l: 'log', i: 'log(' }, { l: 'ln',  i: 'ln('  },
           ].map(b => <button key={b.l} onClick={() => append(b.i)} className={fnBtn}>{b.l}</button>)}
         </div>
-        {/* Function row 2: roots, constants, parens */}
         <div className="grid grid-cols-5 gap-1.5">
           {[
             { l: '√', i: 'sqrt(' }, { l: 'x²', i: '^2' }, { l: 'xⁿ', i: '^' },
             { l: 'π', i: 'pi'    }, { l: 'e', i: 'e' },
           ].map(b => <button key={b.l} onClick={() => append(b.i)} className={fnBtn}>{b.l}</button>)}
         </div>
-        {/* Numeric keypad — 4 rows × 5 cols */}
         <div className="grid grid-cols-5 gap-1.5 pt-1">
           <button onClick={() => append('7')} className={numBtn}>7</button>
           <button onClick={() => append('8')} className={numBtn}>8</button>
@@ -360,8 +329,6 @@ function ScientificCalculator({ onSendToEditor }) {
           <button onClick={() => append('+')} className={opBtn}>+</button>
           <button onClick={() => append(')')} className={fnBtn}>)</button>
         </div>
-
-        {/* Action row */}
         <div className="flex gap-1.5 pt-2">
           <button onClick={sendToEditor} disabled={!expr.trim()}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-semibold border border-amber-900/40 hover:border-amber-500/40 text-amber-400 hover:text-amber-300 disabled:opacity-40 transition-colors">
@@ -369,8 +336,6 @@ function ScientificCalculator({ onSendToEditor }) {
             Drop into LaTeX editor
           </button>
         </div>
-
-        {/* Mini history */}
         {history.length > 0 && (
           <div className="pt-2 border-t border-amber-900/20 mt-2 space-y-1 max-h-28 overflow-y-auto">
             <p className="text-[10px] uppercase tracking-widest text-amber-400/60 font-mono px-1">Recent</p>
@@ -388,20 +353,12 @@ function ScientificCalculator({ onSendToEditor }) {
   );
 }
 
-// Format a JS number for calculator display. Integer → no decimals.
-// Float → up to 10 significant figures (round-tripped to drop float jitter
-// like 0.1+0.2=0.30000000000000004 → 0.3). Very small/very large numbers
-// render in exponential.
 function formatResult(n) {
   if (Number.isInteger(n)) return String(n);
   if (Math.abs(n) < 1e-6 || Math.abs(n) >= 1e15) return n.toExponential(6);
   return parseFloat(n.toPrecision(10)).toString();
 }
 
-// Best-effort plain-text → LaTeX conversion for the "drop into editor" path.
-// Handles the common cases: function calls become \name{...}, ^ stays as ^,
-// * becomes \cdot, / becomes \frac when both sides are bracketed terms,
-// pi/e remain identifiers (KaTeX renders them correctly).
 function exprToLatex(s) {
   let out = s;
   out = out.replace(/sqrt\(([^()]*)\)/g, '\\sqrt{$1}');
@@ -413,11 +370,6 @@ function exprToLatex(s) {
   return out;
 }
 
-// ── Graphing Calculator ───────────────────────────────────────────────────
-// Multi-equation plotter with a single 2D canvas. Each equation has its own
-// f(x) string compiled once via mathEval.tryCompile, then sampled across
-// the x window. The user adds, removes, toggles visibility, and recolors
-// each equation; the canvas redraws on any state change.
 const PLOT_COLORS = ['#FACC15', '#22D3EE', '#A78BFA', '#F472B6', '#34D399', '#FB7185'];
 
 function GraphingCalculator() {
@@ -442,14 +394,11 @@ function GraphingCalculator() {
   const removeEq    = (id)        => setEquations(eqs => eqs.filter(e => e.id !== id));
   const toggleEq    = (id)        => updateEq(id, { visible: !equations.find(e => e.id === id)?.visible });
 
-  // Compile each equation once per render (only re-compiles when expr changes,
-  // because tryCompile is pure and we wrap in useMemo).
   const compiled = useMemo(() => equations.map(eq => ({
     ...eq,
     ...tryCompile(eq.expr || '0'),
   })), [equations]);
 
-  // Redraw on any change to compiled equations or the viewport.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -466,7 +415,6 @@ function GraphingCalculator() {
     drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled);
   }, [compiled, xMin, xMax, yMin, yMax]);
 
-  // Mouse hover → display the (x, y) under the cursor for the first valid eq.
   const handleMove = (e) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -504,7 +452,6 @@ function GraphingCalculator() {
         </div>
       </div>
 
-      {/* Canvas */}
       <div ref={wrapRef} className="relative">
         <canvas
           ref={canvasRef}
@@ -520,7 +467,6 @@ function GraphingCalculator() {
         )}
       </div>
 
-      {/* Equation list */}
       <div className="p-3 space-y-1.5 border-t border-amber-900/20">
         {equations.map(eq => {
           const compiledOne = compiled.find(c => c.id === eq.id);
@@ -558,7 +504,6 @@ function GraphingCalculator() {
           + Add equation
         </button>
 
-        {/* Window controls */}
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-amber-900/20 mt-2">
           {[
             { l: 'x min', v: xMin, setter: setXMin },
@@ -579,9 +524,6 @@ function GraphingCalculator() {
   );
 }
 
-// Render the plot. Pure drawing function; takes a 2D context and the active
-// viewport. Pulls major-grid spacing automatically so 0–1 ranges still get
-// useful gridlines.
 function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
   ctx.fillStyle = '#050505';
   ctx.fillRect(0, 0, W, H);
@@ -589,7 +531,6 @@ function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
   const xToPx = (x) => ((x - xMin) / (xMax - xMin)) * W;
   const yToPx = (y) => H - ((y - yMin) / (yMax - yMin)) * H;
 
-  // Auto-compute a sensible major-tick spacing for the current range
   const tickSpacing = (range) => {
     const raw = range / 10;
     const mag = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -600,7 +541,6 @@ function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
   const xStep = tickSpacing(xMax - xMin);
   const yStep = tickSpacing(yMax - yMin);
 
-  // Grid lines
   ctx.strokeStyle = 'rgba(250,204,21,0.07)';
   ctx.lineWidth = 1;
   for (let x = Math.ceil(xMin / xStep) * xStep; x <= xMax; x += xStep) {
@@ -612,7 +552,6 @@ function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
     ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
   }
 
-  // Axes
   ctx.strokeStyle = 'rgba(250,204,21,0.35)';
   ctx.lineWidth = 1.5;
   if (xMin <= 0 && xMax >= 0) {
@@ -624,7 +563,6 @@ function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
     ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
   }
 
-  // Tick labels
   ctx.fillStyle = 'rgba(200,190,170,0.55)';
   ctx.font = '10px ui-monospace,monospace';
   ctx.textBaseline = 'top';
@@ -638,7 +576,6 @@ function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
     ctx.fillText(formatTick(y), xToPx(0) + 3, yToPx(y));
   }
 
-  // Plot each visible equation
   for (const eq of compiled) {
     if (!eq.visible || !eq.fn) continue;
     ctx.strokeStyle = eq.color;
@@ -651,7 +588,6 @@ function drawPlot(ctx, W, H, xMin, xMax, yMin, yMax, compiled) {
       let y;
       try { y = eq.fn({ x }); } catch { y = NaN; }
       if (!Number.isFinite(y)) { started = false; prevY = null; continue; }
-      // Clip jumps that span the entire viewport (asymptotes like tan)
       if (prevY !== null && Math.abs(y - prevY) > (yMax - yMin) * 5) { started = false; }
       const py = yToPx(y);
       if (!started) { ctx.moveTo(px, py); started = true; }
@@ -667,11 +603,6 @@ function formatTick(n) {
   return parseFloat(n.toPrecision(4)).toString();
 }
 
-// ── SparkEngine internal search ───────────────────────────────────────────
-// LaTeX-Builder-local search bar. Filters across the symbol library and the
-// LaTeX template library; each result inserts at the editor cursor when
-// clicked. Branded as "SparkEngine" per user direction (the LaTeX-related
-// commands previously surfaced through the global SparkEngine moved here).
 function SparkEngineSearch({ symbolGroups, templates, onPick }) {
   const [query, setQuery] = useState('');
   const [open, setOpen]   = useState(false);
@@ -679,7 +610,6 @@ function SparkEngineSearch({ symbolGroups, templates, onPick }) {
   const inputRef = useRef(null);
   const wrapRef  = useRef(null);
 
-  // Flatten symbols + templates into a unified search corpus
   const corpus = useMemo(() => {
     const items = [];
     for (const g of symbolGroups) {
@@ -723,7 +653,6 @@ function SparkEngineSearch({ symbolGroups, templates, onPick }) {
 
   useEffect(() => { setActive(0); }, [query]);
 
-  // Click-outside close
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
@@ -820,7 +749,6 @@ function SparkEngineSearch({ symbolGroups, templates, onPick }) {
   );
 }
 
-// ── History item with KaTeX preview thumbnail ──────────────────────────────
 function HistoryItem({ entry, onSelect, onDelete, katexReady }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -853,14 +781,12 @@ function HistoryItem({ entry, onSelect, onDelete, katexReady }) {
   );
 }
 
-// ── Export dropdown menu ───────────────────────────────────────────────────
 function ExportMenu({ getElement, getLatex }) {
   const [open, setOpen]   = useState(false);
   const [busy, setBusy]   = useState('');
   const [msg, setMsg]     = useState('');
   const wrapRef           = useRef(null);
 
-  // Click-outside to close
   useEffect(() => {
     if (!open) return;
     const onDoc = e => {
@@ -978,7 +904,6 @@ function ExportMenu({ getElement, getLatex }) {
   );
 }
 
-// ── Alt-text generator ─────────────────────────────────────────────────────
 function altText(latex) {
   if (!latex.trim()) return '';
   let t = latex
@@ -1003,7 +928,6 @@ function altText(latex) {
   return t || 'Mathematical expression';
 }
 
-// ── History item ───────────────────────────────────────────────────────────
 const MAX_HISTORY = 20;
 const HISTORY_KEY = 'sparkutility_latex_history';
 
@@ -1014,7 +938,6 @@ function saveHistory(h) {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, MAX_HISTORY))); } catch {}
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
 export default function LaTeXBuilder() {
   const [code, setCode]             = useState('\\int_{a}^{b} f(x)\\,dx');
   const [preview, setPreview]       = useState(true);
@@ -1029,7 +952,6 @@ export default function LaTeXBuilder() {
   const textareaRef                 = useRef(null);
   const previewRef                  = useRef(null);
 
-  // ── Load KaTeX ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!document.getElementById('katex-css')) {
@@ -1057,7 +979,6 @@ export default function LaTeXBuilder() {
     return () => script.removeEventListener('load', onReady);
   }, []);
 
-  // ── Render preview ────────────────────────────────────────────────────────
   const renderPreview = useCallback(() => {
     const el = previewRef.current;
     if (!el || !window.katex) return;
@@ -1072,7 +993,6 @@ export default function LaTeXBuilder() {
 
   useEffect(() => { renderPreview(); }, [renderPreview, katexReady]);
 
-  // ── Insert at cursor ──────────────────────────────────────────────────────
   // cursorBack > 0 lands the caret N chars before the end of the inserted text
   // — e.g. inserting `\sqrt{}` with cursorBack=1 places the caret inside `{}`
   // so the user can immediately type the radicand.
@@ -1090,7 +1010,6 @@ export default function LaTeXBuilder() {
     }, 0);
   }, [code]);
 
-  // ── Save to history ───────────────────────────────────────────────────────
   const pushHistory = useCallback((latex) => {
     if (!latex.trim()) return;
     setHistory(prev => {
@@ -1100,7 +1019,6 @@ export default function LaTeXBuilder() {
     });
   }, []);
 
-  // ── Remove single history item ────────────────────────────────────────────
   const removeHistoryItem = useCallback((ts) => {
     setHistory(prev => {
       const next = prev.filter(h => h.ts !== ts);
@@ -1109,7 +1027,6 @@ export default function LaTeXBuilder() {
     });
   }, []);
 
-  // ── Copy LaTeX ────────────────────────────────────────────────────────────
   const copyLatex = async () => {
     await navigator.clipboard?.writeText(code).catch(() => {});
     pushHistory(code);
@@ -1117,20 +1034,17 @@ export default function LaTeXBuilder() {
     setTimeout(() => setCopied(false), 1800);
   };
 
-  // ── Copy alt text ─────────────────────────────────────────────────────────
   const copyAlt = async () => {
     await navigator.clipboard?.writeText(altText(code)).catch(() => {});
     setAltCopied(true);
     setTimeout(() => setAltCopied(false), 1800);
   };
 
-  // ── Color wrap ────────────────────────────────────────────────────────────
   const wrapColor = () => {
     if (!colorTarget.trim()) return;
     insertAtCursor(`\\color{${colorPick.replace('#','')}}{${colorTarget}}`);
   };
 
-  // ── Annotation wrap ───────────────────────────────────────────────────────
   const wrapAnnot = () => {
     if (!colorTarget.trim() || !annotText.trim()) return;
     insertAtCursor(`\\underbrace{${colorTarget}}_{\\text{${annotText}}}`);

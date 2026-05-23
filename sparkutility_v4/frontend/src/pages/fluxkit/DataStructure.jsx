@@ -117,7 +117,6 @@ function StatusBanner({ type, message }) {
   );
 }
 
-// ── 1. JSON Validator & Fixer ─────────────────────────────────────────────────
 function jsonAutoFix(raw) {
   let s = raw.trim();
   if (!s) throw new Error('Input is empty.');
@@ -178,7 +177,6 @@ function JSONValidator() {
   );
 }
 
-// ── 2. XML → JSON ─────────────────────────────────────────────────────────────
 function xmlNodeToObj(node) {
   if (node.nodeType === 3) return node.nodeValue.trim() || undefined;
   if (node.nodeType === 8) return undefined;
@@ -240,7 +238,6 @@ function XMLtoJSON() {
   );
 }
 
-// ── 3. CSV → JSON / Array ─────────────────────────────────────────────────────
 function parseCSVRaw(raw, delimiter) {
   const rows = [[]]; let cur = '', inQ = false;
   for (let i = 0; i < raw.length; i++) {
@@ -327,7 +324,6 @@ function CSVtoJSON() {
   );
 }
 
-// ── 4. YAML ↔ JSON ────────────────────────────────────────────────────────────
 function parseYAMLSimple(text) {
   const lines = text.split('\n');
   function pv(v) {
@@ -450,7 +446,6 @@ function YAMLtoJSON() {
   );
 }
 
-// ── 5. SQL Formatter ──────────────────────────────────────────────────────────
 const MAJOR_KW = ['SELECT','FROM','WHERE','JOIN','LEFT JOIN','RIGHT JOIN','INNER JOIN',
   'FULL OUTER JOIN','FULL JOIN','LEFT OUTER JOIN','CROSS JOIN','ON','ORDER BY','GROUP BY',
   'HAVING','LIMIT','OFFSET','UNION ALL','UNION','INSERT INTO','VALUES','UPDATE','SET',
@@ -540,7 +535,6 @@ function SQLFormatter() {
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 export default function DataStructure() {
   return (
     <div style={{ minHeight: 'calc(100vh - 4rem)', background: '#050505' }}>
@@ -553,7 +547,6 @@ export default function DataStructure() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
 
-        {/* Breadcrumb */}
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
           className="flex items-center gap-1.5 mb-10"
           style={{ ...FB, fontSize:'0.75rem', color:'rgba(200,190,170,0.4)' }}>
@@ -563,7 +556,6 @@ export default function DataStructure() {
           <span>Data &amp; Structure</span>
         </motion.div>
 
-        {/* Badge */}
         <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm mb-8"
           style={{ background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.25)', ...FM, fontSize:'0.68rem', color:GOLD, letterSpacing:'0.12em', textTransform:'uppercase' }}>
@@ -571,7 +563,6 @@ export default function DataStructure() {
           Data &amp; Structure Utilities
         </motion.div>
 
-        {/* Headline */}
         <motion.h1 initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:0.6, delay:0.08, ease:[0.22,1,0.36,1] }}
           style={{ ...FH, fontSize:'clamp(2.2rem,6vw,4.5rem)', lineHeight:1.05, color:'#F5F0E8', marginBottom:'1rem' }}>
@@ -585,7 +576,6 @@ export default function DataStructure() {
           Everything runs 100% in-browser — no uploads, no servers.
         </motion.p>
 
-        {/* Divider */}
         <motion.div initial={{ opacity:0, scaleX:0 }} animate={{ opacity:1, scaleX:1 }}
           transition={{ duration:0.5, delay:0.25 }} className="flex items-center gap-4 mb-12" style={{ transformOrigin:'left' }}>
           <div className="h-px flex-1" style={{ background:'linear-gradient(90deg,rgba(250,204,21,0.3),transparent)' }} />
@@ -593,7 +583,6 @@ export default function DataStructure() {
           <div className="h-px w-16" style={{ background:'rgba(250,204,21,0.1)' }} />
         </motion.div>
 
-        {/* Tools */}
         <div className="space-y-4">
           {[JSONValidator, XMLtoJSON, CSVtoJSON, YAMLtoJSON, SQLFormatter].map((Tool, i) => (
             <motion.div key={i}
@@ -605,7 +594,6 @@ export default function DataStructure() {
           ))}
         </div>
 
-        {/* Footer */}
         <motion.div initial={{ opacity:0, y:14 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
           transition={{ delay:0.15 }} className="mt-12 text-center">
           <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl"

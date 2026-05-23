@@ -1,4 +1,3 @@
-// Local-only presets store. Saved per-category so the UI can filter relevant ones.
 const KEY = 'sparkutility_presets_v1';
 const MAX_PRESETS = 50;
 
@@ -30,7 +29,6 @@ export function savePreset({ name, category, targetFormat, compression, settings
   if (!trimmed) return null;
 
   const all = readAll();
-  // Replace existing preset with same name+category, or append.
   const idx = all.findIndex(p => p.category === category && p.name === trimmed);
   const entry = {
     id: idx >= 0 ? all[idx].id : `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -52,11 +50,6 @@ export function deletePreset(id) {
   writeAll(all);
 }
 
-// ── Shareable token encoding ────────────────────────────────────────────────
-// Tokens are URL-safe base64 of a compact-keyed JSON shape so they're short
-// enough to copy-paste through any chat / email / message field:
-//   { n: name, c: category, t: targetFormat, cp: compression, s: settings }
-
 function toUrlSafe(b64) {
   return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -75,8 +68,6 @@ function encodePreset(preset) {
     cp: preset.compression  || 'balanced',
     s:  preset.settings     || {},
   };
-  // unescape(encodeURIComponent(...)) keeps btoa safe across non-Latin-1
-  // characters (preset names may include emoji/non-ASCII).
   const json = JSON.stringify(compact);
   const safe = typeof unescape === 'function'
     ? unescape(encodeURIComponent(json))

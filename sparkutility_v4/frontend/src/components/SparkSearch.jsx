@@ -40,8 +40,6 @@ export default function SparkSearch() {
   const navigate                  = useNavigate();
   const { settings }              = useSettings();
 
-  // Pre-build index reference if sparkSearchIndexing is on (eager vs. lazy is identical
-  // for a static list, but this satisfies the setting's contract for future dynamic indexes).
   const indexReady = useMemo(
     () => settings.sparkSearchIndexing ? SEARCH_INDEX : SEARCH_INDEX,
     [settings.sparkSearchIndexing]
@@ -54,7 +52,6 @@ export default function SparkSearch() {
 
   const flatResults = results.flatMap ? results : results;
 
-  // For keyboard navigation we need a flat ordered list
   const flatList = useMemo(() => {
     if (query.trim()) return results;
     return CATEGORY_ORDER.flatMap(cat => results.filter(r => r.category === cat));
@@ -65,7 +62,6 @@ export default function SparkSearch() {
     return groupByCategory(results);
   }, [results, query]);
 
-  // ── Keyboard shortcut ────────────────────────────────────────────────────
   useEffect(() => {
     const down = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -77,7 +73,6 @@ export default function SparkSearch() {
     return () => window.removeEventListener('keydown', down);
   }, []);
 
-  // ── Auto-focus input on open ──────────────────────────────────────────────
   useEffect(() => {
     if (open) {
       setQuery('');
@@ -86,10 +81,8 @@ export default function SparkSearch() {
     }
   }, [open]);
 
-  // ── Reset selection when results change ──────────────────────────────────
   useEffect(() => { setSelected(0); }, [query]);
 
-  // ── Navigation inside modal ───────────────────────────────────────────────
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') { setOpen(false); return; }
     if (e.key === 'ArrowDown') {
@@ -107,7 +100,6 @@ export default function SparkSearch() {
     }
   }, [flatList, selectedIdx, navigate]);
 
-  // ── Scroll selected item into view ────────────────────────────────────────
   useEffect(() => {
     const el = listRef.current?.querySelector(`[data-idx="${selectedIdx}"]`);
     el?.scrollIntoView({ block: 'nearest' });
@@ -118,7 +110,6 @@ export default function SparkSearch() {
     setOpen(false);
   }, [navigate]);
 
-  // ── Result item renderer ──────────────────────────────────────────────────
   const ResultItem = ({ item, idx }) => {
     const Icon    = item.Icon;
     const active  = idx === selectedIdx;

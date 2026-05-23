@@ -126,8 +126,6 @@ function StatusBanner({ type, message }) {
   );
 }
 
-// ─── TOOL 1: DIFF VIEWER ─────────────────────────────────────────────────────
-
 function computeLineDiff(a, b) {
   const al = a.split('\n'), bl = b.split('\n');
   const m = al.length, n = bl.length;
@@ -208,8 +206,6 @@ function DiffViewerTool() {
     </ToolPanel>
   );
 }
-
-// ─── TOOL 2: CONSOLE LOG GENERATOR ───────────────────────────────────────────
 
 const LOG_STYLES = [
   { id: 'styled',  label: 'Styled'  },
@@ -306,8 +302,6 @@ function ConsoleLogTool() {
     </ToolPanel>
   );
 }
-
-// ─── TOOL 3: CURL → FETCH / AXIOS ────────────────────────────────────────────
 
 function parseCurl(raw) {
   const src = raw.replace(/\\\n/g, ' ').replace(/\s+/g, ' ').trim();
@@ -416,8 +410,6 @@ function CurlConverterTool() {
   );
 }
 
-// ─── TOOL 4: MARKDOWN → HTML LIVE PREVIEW ────────────────────────────────────
-
 function simpleMarkdown(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const lines = esc.split('\n');
@@ -482,8 +474,6 @@ function MarkdownTool() {
     </ToolPanel>
   );
 }
-
-// ─── TOOL 5: URL PARSER ───────────────────────────────────────────────────────
 
 function parseUrl(raw) {
   try {
@@ -565,8 +555,6 @@ function UrlParserTool() {
   );
 }
 
-// ─── PAGE ─────────────────────────────────────────────────────────────────────
-
 const TOOLS = [DiffViewerTool, ConsoleLogTool, CurlConverterTool, MarkdownTool, UrlParserTool];
 
 export default function Productivity() {
@@ -582,7 +570,6 @@ export default function Productivity() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
 
-        {/* Breadcrumb */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="flex items-center gap-1.5 mb-10"
           style={{ ...FB, fontSize: '0.75rem', color: 'rgba(200,190,170,0.4)' }}>
@@ -592,7 +579,6 @@ export default function Productivity() {
           <span>Productivity Tools</span>
         </motion.div>
 
-        {/* Badge */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm mb-8"
           style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.25)', ...FM, fontSize: '0.68rem', color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
@@ -600,7 +586,6 @@ export default function Productivity() {
           Productivity Utilities
         </motion.div>
 
-        {/* Headline */}
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
           style={{ ...FH, fontSize: 'clamp(2.2rem,6vw,4.5rem)', lineHeight: 1.05, color: '#F5F0E8', marginBottom: '1rem' }}>
@@ -614,7 +599,6 @@ export default function Productivity() {
           cURL→Fetch/Axios converter, live Markdown preview, and URL parser. All 100% in-browser.
         </motion.p>
 
-        {/* Divider */}
         <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }}
           transition={{ duration: 0.5, delay: 0.25 }} className="flex items-center gap-4 mb-12" style={{ transformOrigin: 'left' }}>
           <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg,rgba(250,204,21,0.3),transparent)' }} />
@@ -622,7 +606,6 @@ export default function Productivity() {
           <div className="h-px w-16" style={{ background: 'rgba(250,204,21,0.1)' }} />
         </motion.div>
 
-        {/* Tools */}
         <div className="space-y-4">
           {TOOLS.map((Tool, i) => (
             <motion.div key={i}
@@ -634,7 +617,6 @@ export default function Productivity() {
           ))}
         </div>
 
-        {/* Footer */}
         <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           transition={{ delay: 0.15 }} className="mt-12 text-center">
           <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl"

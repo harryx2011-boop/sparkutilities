@@ -19,7 +19,6 @@ export default function MetadataPanel({ file, category, getFFmpeg }) {
   const [deepLoading, setDeepLoading] = useState(false);
   const [deepError, setDeepError] = useState('');
 
-  // Run the quick probe as soon as the panel opens (cheap, native).
   useEffect(() => {
     if (!open || quick) return;
     let cancelled = false;
@@ -68,7 +67,6 @@ export default function MetadataPanel({ file, category, getFFmpeg }) {
             className="overflow-hidden"
           >
             <div className="mt-3 p-3 rounded-xl bg-background/60 border border-border/50 space-y-3">
-              {/* Basics — always available */}
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                 <div className="flex items-center gap-1.5 text-muted-foreground col-span-2 mb-0.5">
                   <Icon className="w-3.5 h-3.5" />
@@ -86,7 +84,6 @@ export default function MetadataPanel({ file, category, getFFmpeg }) {
                 </p>
               )}
 
-              {/* Deep probe — opt-in, since it spins up ffmpeg.wasm */}
               <div className="pt-2 border-t border-border/40">
                 {!deep && !deepLoading && !deepError && (
                   <button

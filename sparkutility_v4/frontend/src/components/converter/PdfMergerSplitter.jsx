@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
 function formatSize(bytes) {
   if (!bytes) return '—';
   if (bytes < 1024) return `${bytes} B`;
@@ -44,7 +42,6 @@ async function getPageCount(file) {
 }
 
 function parseSplitRanges(input, totalPages) {
-  // Accepts: "1-3, 5, 7-10" → [[1,3],[5,5],[7,10]]
   const ranges = [];
   const parts = input.split(',').map(s => s.trim()).filter(Boolean);
   for (const part of parts) {
@@ -57,8 +54,6 @@ function parseSplitRanges(input, totalPages) {
   }
   return ranges.length ? ranges : null;
 }
-
-// ── PDF Entry (for merge list) ────────────────────────────────────────────────
 
 function PdfEntry({ entry, index, onRemove, dragHandleProps }) {
   return (
@@ -87,12 +82,9 @@ function PdfEntry({ entry, index, onRemove, dragHandleProps }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
-
 export default function PdfMergerSplitter() {
   const [mode, setMode] = useState('merge'); // 'merge' | 'split'
 
-  // ── Merge state ──────────────────────────────────────────────────────────
   const [mergeFiles, setMergeFiles] = useState([]);
   const [mergeStatus, setMergeStatus] = useState('idle'); // idle | working | done | error
   const [mergeProgress, setMergeProgress] = useState(0);
@@ -100,7 +92,6 @@ export default function PdfMergerSplitter() {
   const mergeOutputRef = useRef(null);
   const mergeInputRef = useRef(null);
 
-  // ── Split state ──────────────────────────────────────────────────────────
   const [splitFile, setSplitFile] = useState(null);
   const [splitPageCount, setSplitPageCount] = useState(0);
   const [splitMode, setSplitMode] = useState('each'); // 'each' | 'range' | 'half'
@@ -110,7 +101,6 @@ export default function PdfMergerSplitter() {
   const [splitError, setSplitError] = useState('');
   const splitInputRef = useRef(null);
 
-  // ── Merge handlers ───────────────────────────────────────────────────────
 
   const handleMergeFilesAdded = useCallback(async (fileList) => {
     const pdfs = Array.from(fileList).filter(f =>
@@ -178,7 +168,6 @@ export default function PdfMergerSplitter() {
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
   }, []);
 
-  // ── Split handlers ───────────────────────────────────────────────────────
 
   const handleSplitFileAdded = useCallback(async (fileList) => {
     const f = Array.from(fileList).find(x =>
@@ -254,7 +243,6 @@ export default function PdfMergerSplitter() {
     }
   }, [splitFile, splitMode, splitRanges]);
 
-  // ── Range validation ─────────────────────────────────────────────────────
   const rangesValid = splitMode !== 'range' || !!parseSplitRanges(splitRanges, splitPageCount);
 
   return (
@@ -289,11 +277,8 @@ export default function PdfMergerSplitter() {
 
       <div className="p-4 space-y-4">
         <AnimatePresence mode="wait">
-
-          {/* ── MERGE MODE ── */}
           {mode === 'merge' && (
             <motion.div key="merge" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
-              {/* Drop zone */}
               <div
                 onDragOver={e => e.preventDefault()}
                 onDrop={handleMergeDrop}
@@ -306,7 +291,6 @@ export default function PdfMergerSplitter() {
                 <p className="text-xs text-muted-foreground mt-1">Add as many PDFs as you need — drag to reorder</p>
               </div>
 
-              {/* File list */}
               {mergeFiles.length > 0 && (
                 <DragDropContext onDragEnd={handleMergeDragEnd}>
                   <Droppable droppableId="merge-list">
@@ -333,7 +317,6 @@ export default function PdfMergerSplitter() {
                 </DragDropContext>
               )}
 
-              {/* Actions */}
               {mergeFiles.length >= 2 && (
                 <div className="space-y-3">
                   {mergeStatus === 'working' && (
@@ -379,10 +362,8 @@ export default function PdfMergerSplitter() {
             </motion.div>
           )}
 
-          {/* ── SPLIT MODE ── */}
           {mode === 'split' && (
             <motion.div key="split" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
-              {/* Drop zone */}
               <div
                 onDragOver={e => e.preventDefault()}
                 onDrop={e => { e.preventDefault(); handleSplitFileAdded(e.dataTransfer.files); }}

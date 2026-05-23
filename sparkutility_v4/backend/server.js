@@ -16,7 +16,6 @@ const DEV_HOST = process.env.DEV_HOST || 'sparkutilities.dev';
 
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
-// ── Generic JSON store ───────────────────────────────────────────────────────
 function loadJson(name, fallback) {
   try {
     const file = join(DATA_DIR, name);
@@ -31,7 +30,6 @@ function saveJson(name, data) {
   writeFileSync(join(DATA_DIR, name), JSON.stringify(data, null, 2), 'utf8');
 }
 
-// ── Analytics validation ─────────────────────────────────────────────────────
 const ALLOWED_CATEGORIES   = new Set(['video', 'audio', 'image', 'document']);
 const FORMAT_RE            = /^[A-Za-z0-9]{1,8}$/;
 const ALLOWED_SIZE_BUCKETS = new Set(['<10MB', '10-100MB', '100MB-1GB', '>1GB', 'unknown']);
@@ -52,7 +50,6 @@ function validateAnalyticsEvent(input) {
   };
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
 const app = express();
 app.disable('x-powered-by');
 
@@ -108,7 +105,6 @@ app.use(rateLimit({
   message: { error: 'Too many requests' },
 }));
 
-// ── Routes: analytics (write-only fire-and-forget) ───────────────────────────
 function loadAnalytics() {
   return loadJson('analytics.json', {
     totals: { conversions: 0 },
@@ -143,7 +139,6 @@ app.post('/api/analytics/event', (req, res) => {
   res.status(204).end();
 });
 
-// ── Routes: URL preview (link unfurl) ────────────────────────────────────────
 // SSRF guard — reject private / loopback / link-local addresses.
 function isPrivateHost(hostname) {
   if (!hostname) return true;
@@ -317,13 +312,10 @@ app.get('/api/preview', previewLimiter, async (req, res) => {
   }
 });
 
-// ── Health ───────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-// ── 404 catch-all ────────────────────────────────────────────────────────────
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
-// ── Error handler — never leak stack traces ─────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   const isRateLimitValidation = err?.name === 'ValidationError' && typeof err?.code === 'string' && err.code.startsWith('ERR_ERL_');

@@ -1,7 +1,6 @@
 import { RefreshCw, Wand2, Zap, Database, Palette, ShieldCheck, Wrench, Settings2, Music, Eye, Hash } from 'lucide-react';
 
 export const SEARCH_INDEX = [
-  // ── Utilities ────────────────────────────────────────────────────────────
   {
     id:          'file-converter',
     path:        '/file-converter',
@@ -39,7 +38,6 @@ export const SEARCH_INDEX = [
     Icon:        Eye,
   },
 
-  // ── FluxKit ───────────────────────────────────────────────────────────────
   {
     id:          'fluxkit',
     path:        '/fluxkit',
@@ -95,7 +93,6 @@ export const SEARCH_INDEX = [
     Icon:        Hash,
   },
 
-  // ── System ──────────────────────────────────────────────────────────
   {
     id:          'settings',
     path:        '/settings',

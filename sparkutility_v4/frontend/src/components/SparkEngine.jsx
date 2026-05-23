@@ -9,13 +9,11 @@ import { SEARCH_INDEX, runSearch } from '@/lib/sparkSearch';
 import { useSettings } from '@/context/SettingsContext';
 import { useTheme } from '@/context/ThemeContext';
 
-// ── Platform detection ─────────────────────────────────────────────────────
 const isMac = typeof navigator !== 'undefined' &&
   (navigator.platform.toUpperCase().includes('MAC') || navigator.userAgent.includes('Macintosh'));
 
 const CATEGORY_ORDER = ['Utilities', 'FluxKit', 'System'];
 
-// ── Command registry ───────────────────────────────────────────────────────
 // Commands are triggered when the user types /commandname in SparkEngine
 const COMMANDS = [
   { id: 'goto-home',        trigger: '/home',         label: 'Go to Home',               desc: 'Navigate to the home page',                icon: Search,   type: 'nav',      path: '/' },
@@ -43,7 +41,6 @@ const COMMANDS = [
   { id: 'toggle-lowpower',  trigger: '/lowpower',     label: 'Toggle Low-Power Mode',     desc: 'Enable or disable low-power mode',          icon: Zap,      type: 'action',   action: 'lowpower' },
   { id: 'toggle-scrub',     trigger: '/scrub',        label: 'Toggle Auto-Scrub Metadata',desc: 'Enable or disable metadata scrubbing',     icon: Shield,   type: 'action',   action: 'scrub' },
   { id: 'keybinds',         trigger: '/keybinds',     label: 'Keyboard Shortcuts',        desc: 'View and edit keyboard shortcut bindings',  icon: Keyboard, type: 'nav',      path: '/settings' },
-  // ── LaTeX template commands have moved to the LaTeX Builder's internal
   //    SparkEngine search bar (Phase D, v3.3.11). Keeping them in the global
   //    palette duplicated the surface and let users drop templates with no
   //    target editor in focus, which was a confusing no-op. The /latex nav
@@ -75,7 +72,6 @@ function highlight(text, query) {
   );
 }
 
-// ── Command list modal ─────────────────────────────────────────────────────
 function CommandListModal({ onClose }) {
   return (
     <motion.div
@@ -134,7 +130,6 @@ function CommandListModal({ onClose }) {
   );
 }
 
-// ── Main SparkEngine component ─────────────────────────────────────────────
 export default function SparkEngine() {
   const [open, setOpen]            = useState(false);
   const [query, setQuery]          = useState('');
@@ -154,7 +149,6 @@ export default function SparkEngine() {
     [settings.sparkSearchIndexing]
   );
 
-  // ── Filtered commands when typing / ───────────────────────────────────────
   const filteredCommands = useMemo(() => {
     if (!isCommand) return [];
     const q = query.toLowerCase();
@@ -165,7 +159,6 @@ export default function SparkEngine() {
     });
   }, [query, isCommand]);
 
-  // ── Search results when not typing a command ───────────────────────────
   const searchResults = useMemo(() => {
     if (isCommand) return [];
     const raw = runSearch(query);
@@ -183,7 +176,6 @@ export default function SparkEngine() {
     return groupByCategory(searchResults);
   }, [isCommand, searchResults, query]);
 
-  // ── Execute a command ─────────────────────────────────────────────────────
   const execCommand = useCallback((cmd) => {
     setOpen(false);
     setQuery('');
@@ -197,7 +189,6 @@ export default function SparkEngine() {
     }
   }, [navigate, settings, updateSetting, setUserMode]);
 
-  // ── Keyboard shortcut ─────────────────────────────────────────────────────
   useEffect(() => {
     const key = settings.keybinds?.sparkEngine ?? 'k';
     const down = (e) => {
@@ -210,7 +201,6 @@ export default function SparkEngine() {
     return () => window.removeEventListener('keydown', down);
   }, [settings.keybinds]);
 
-  // ── Auto-focus on open ────────────────────────────────────────────────────
   useEffect(() => {
     if (open) {
       setQuery('');
@@ -221,7 +211,6 @@ export default function SparkEngine() {
 
   useEffect(() => { setSelected(0); }, [query]);
 
-  // ── Navigation inside modal ───────────────────────────────────────────────
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') { setOpen(false); return; }
     if (e.key === 'ArrowDown') {
@@ -245,7 +234,6 @@ export default function SparkEngine() {
     }
   }, [flatList, selectedIdx, navigate, isCommand, execCommand]);
 
-  // ── Scroll selected into view ─────────────────────────────────────────────
   useEffect(() => {
     const el = listRef.current?.querySelector(`[data-idx="${selectedIdx}"]`);
     el?.scrollIntoView({ block: 'nearest' });
@@ -253,7 +241,6 @@ export default function SparkEngine() {
 
   const go = useCallback((path) => { navigate(path); setOpen(false); }, [navigate]);
 
-  // ── Result item ───────────────────────────────────────────────────────────
   const ResultItem = ({ item, idx }) => {
     const Icon   = item.Icon;
     const active = idx === selectedIdx;
@@ -279,7 +266,6 @@ export default function SparkEngine() {
     );
   };
 
-  // ── Command item ──────────────────────────────────────────────────────────
   const CommandItem = ({ cmd, idx }) => {
     const Icon   = cmd.icon;
     const active = idx === selectedIdx;

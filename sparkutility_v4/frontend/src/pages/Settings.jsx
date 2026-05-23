@@ -102,7 +102,6 @@ const KEYBIND_ACTIONS = [
   { key: 'deleteFile',      label: 'Delete Selected File', desc: 'File Converter',             modifier: false },
   { key: 'clearSelection',  label: 'Clear Selection',      desc: 'File Converter',             modifier: false },
   { key: 'playPause',       label: 'Play / Pause Audio',   desc: 'Audio Modifier',             modifier: false },
-  // ── Image Editor (modifier-key bindings use the parser-aware hook) ─────────
   { key: 'imageUndo',       label: 'Undo',                 desc: 'Image Editor — drawing-layer undo (default Cmd/Ctrl+Z)',          modifier: false, raw: true },
   { key: 'imageRedo',       label: 'Redo',                 desc: 'Image Editor — drawing-layer redo (default Cmd/Ctrl+Shift+Z)',    modifier: false, raw: true },
   { key: 'imageRedoAlt',    label: 'Redo (alt)',           desc: 'Image Editor — second binding for redo (default Cmd/Ctrl+Y)',     modifier: false, raw: true },
@@ -197,7 +196,6 @@ function KeybindRow({ actionKey, label, desc, modifier, raw, value, onChange }) 
   );
 }
 
-// ── Section nav definition ────────────────────────────────────────────────
 // Drives both the sticky sidebar (desktop) and the scrollable tab strip
 // (mobile). `id` matches the corresponding section element id for anchor
 // scroll + IntersectionObserver-based active highlighting.
@@ -212,7 +210,6 @@ const SECTIONS = [
   { id: 'data',          Icon: Database,  title: 'Data',              subtitle: 'Export, import, wipe' },
 ];
 
-// ── Capability probes ─────────────────────────────────────────────────────
 // Single source of truth for the System Status card. Each probe is cheap
 // and side-effect-free; we run them once at component mount and surface the
 // result in the read-only status card.
@@ -226,7 +223,6 @@ function probeWebGL() {
   } catch { return { ok: false, version: '—' }; }
 }
 
-// ── Data export / import / clear ──────────────────────────────────────────
 // Targets every key with the canonical sparkutility_ prefix plus the legacy
 // The exported JSON is a flat dump — re-importing it
 // restores the full local profile on a fresh device.
@@ -322,7 +318,6 @@ export default function Settings() {
     updateSetting('keybinds', { ...settings.keybinds, [actionKey]: newKey });
   };
 
-  // ── Capability probes (frozen at mount) ───────────────────────────────────
   const sabAvailable = useMemo(() =>
     typeof window !== 'undefined' && window.crossOriginIsolated === true, []);
   const webgl = useMemo(probeWebGL, []);
@@ -335,8 +330,6 @@ export default function Settings() {
     return { label: 'Single-thread', tone: 'warn' };
   }, [sabAvailable, webgl.ok]);
 
-  // ── Sidebar scroll spy ────────────────────────────────────────────────────
-  // Highlights the section currently in view. Bound after mount so refs exist.
   useEffect(() => {
     const els = SECTIONS.map(s => document.getElementById(`section-${s.id}`)).filter(Boolean);
     if (els.length === 0) return;
@@ -354,7 +347,6 @@ export default function Settings() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // ── Data handlers ─────────────────────────────────────────────────────────
   const handleExport = () => {
     const payload = exportLocalData();
     if (!payload) return;
@@ -423,7 +415,6 @@ export default function Settings() {
           )}
         </motion.div>
 
-        {/* ── Mobile section tab strip ── */}
         <div className="lg:hidden flex gap-1 mb-6 overflow-x-auto pb-2 -mx-1 px-1">
           {SECTIONS.map(s => {
             const active = activeSection === s.id;
@@ -441,10 +432,8 @@ export default function Settings() {
           })}
         </div>
 
-        {/* ── Two-column layout ── */}
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
 
-          {/* ── Sidebar nav (sticky on desktop) ── */}
           <aside className="hidden lg:block">
             <nav className="sticky top-24 space-y-1">
               {SECTIONS.map(s => {
@@ -471,10 +460,8 @@ export default function Settings() {
             </nav>
           </aside>
 
-          {/* ── Content column ── */}
           <div className="space-y-6 min-w-0">
 
-        {/* ── System Status ── */}
         <div id="section-status" className="scroll-mt-24">
         <SectionCard
           icon={Activity}
@@ -519,7 +506,6 @@ export default function Settings() {
         </SectionCard>
         </div>
 
-        {/* ── Privacy & Security ── */}
         <div id="section-privacy" className="scroll-mt-24">
         <SectionCard
           icon={Shield}
@@ -582,7 +568,6 @@ export default function Settings() {
 
         </div>
 
-        {/* ── Notifications ── */}
         <div id="section-notifications" className="scroll-mt-24">
         <SectionCard
           icon={Bell}
@@ -621,7 +606,6 @@ export default function Settings() {
 
         </div>
 
-        {/* ── Performance & System ── */}
         <div id="section-performance" className="scroll-mt-24">
         <SectionCard
           icon={Zap}
@@ -681,7 +665,6 @@ export default function Settings() {
 
         </div>
 
-        {/* ── Keyboard Shortcuts ── */}
         <div id="section-keybinds" className="scroll-mt-24">
         <SectionCard
           icon={Keyboard}
@@ -692,10 +675,6 @@ export default function Settings() {
         >
           {KEYBIND_ACTIONS.map(action => {
             const value = settings.keybinds?.[action.key] ?? DEFAULT_SETTINGS.keybinds[action.key];
-            // raw: true rows accept modifier chords (e.g. "Mod+Shift+z").
-            // KeybindRow now records modifiers when `raw` is set, so these
-            // are no longer read-only. Plain keybinds (no `raw`) keep the
-            // single-key-only capture path.
             return (
               <KeybindRow
                 key={action.key}
@@ -721,7 +700,6 @@ export default function Settings() {
 
         </div>
 
-        {/* ── Theme & Display ── */}
         <div id="section-theme" className="scroll-mt-24">
         <SectionCard
           icon={Palette}
@@ -730,7 +708,6 @@ export default function Settings() {
           iconColor="text-blue-400"
           iconBg="bg-blue-500/10"
         >
-          {/* Dyslexia-friendly font */}
           <SettingRow
             icon={Type}
             label="Dyslexia-Friendly Font"
@@ -776,7 +753,6 @@ export default function Settings() {
 
         </div>
 
-        {/* ── Sidebar ── */}
         <div id="section-sidebar" className="scroll-mt-24">
         <SectionCard
           icon={PanelLeft}
@@ -797,7 +773,6 @@ export default function Settings() {
             }
           />
 
-          {/* Pinned tools picker */}
           <div className="py-4 border-b border-border/30 last:border-0">
             <div className="flex items-start gap-3 mb-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -855,7 +830,6 @@ export default function Settings() {
         </SectionCard>
         </div>
 
-        {/* ── Data (export / import / clear) ── */}
         <div id="section-data" className="scroll-mt-24">
         <SectionCard
           icon={Database}
@@ -908,7 +882,6 @@ export default function Settings() {
         </SectionCard>
         </div>
 
-        {/* Reset */}
         <motion.div {...fadeUp(0.1)} className="flex items-center justify-between gap-4 pt-2">
           <p className="text-xs text-muted-foreground">
             Settings are saved locally and never shared.

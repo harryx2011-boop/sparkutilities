@@ -10,7 +10,6 @@ import { useToolTheme } from '@/context/ToolThemeContext';
 import { useSettings } from '@/context/SettingsContext';
 import { playSuccessChime, notifyTaskComplete } from '@/lib/notificationSound';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(sec) {
   if (!isFinite(sec)) return '0:00';
@@ -26,7 +25,6 @@ function formatSize(bytes) {
   return `${(bytes / k ** i).toFixed(1)} ${s[i]}`;
 }
 
-// ─── Cubic Spline Interpolation for EQ ───────────────────────────────────────
 
 function cubicSplinePoints(points, steps = 200) {
   const n = points.length;
@@ -61,7 +59,6 @@ function cubicSplinePoints(points, steps = 200) {
   return result;
 }
 
-// ─── Shared Sub-components ────────────────────────────────────────────────────
 
 function SliderRow({ label, value, min, max, step = 1, unit = '', onChange, accent = '#6366f1', formatVal }) {
   const display = formatVal ? formatVal(value) : `${value}${unit}`;
@@ -124,7 +121,6 @@ function ToolCard({ title, icon: Icon, iconColor, children, defaultOpen = false 
   );
 }
 
-// ─── EQ Spline Visualizer ─────────────────────────────────────────────────────
 
 // EQ gain is capped at ±18 dB to prevent speaker-destroying boosts and stay in
 // line with the range used by every consumer EQ. Anything above that is also
@@ -227,7 +223,6 @@ function EQVisualizer({ bass, vocal, treble, onChange }) {
   );
 }
 
-// ─── Audio Waveform Visualizer ────────────────────────────────────────────────
 
 function WaveformDisplay({ audioBuffer, trimStart, trimEnd, currentTime, duration }) {
   const canvasRef = useRef(null);
@@ -272,7 +267,6 @@ function WaveformDisplay({ audioBuffer, trimStart, trimEnd, currentTime, duratio
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AudioModifier() {
   const { getToolGradient } = useToolTheme();
@@ -335,7 +329,6 @@ export default function AudioModifier() {
   const dropRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // ── Load file ────────────────────────────────────────────────────────────────
   const loadFile = useCallback(async (f) => {
     const AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/flac',
       'audio/aac', 'audio/m4a', 'audio/webm', 'audio/opus', 'audio/x-wav', 'audio/x-flac'];
@@ -367,7 +360,6 @@ export default function AudioModifier() {
     setPlaying(false);
   };
 
-  // ── Play / Pause ─────────────────────────────────────────────────────────────
   const togglePlay = useCallback(() => {
     if (!audioBuffer || !audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
@@ -492,7 +484,6 @@ export default function AudioModifier() {
   }, [audioBuffer, playing, duration, trimStart, trimEnd, tempoChanger, volumeChanger,
       bassBooster, eq, stereoPanner, reverb, audio3D]);
 
-  // ── Real-time preview ────────────────────────────────────────────────────────
   // Each effect's params are mirrored onto its live AudioNode (when present)
   // so dragging a slider during playback applies instantly. The graph is only
   // (re)built at play start; these effects run on every state change but only
@@ -549,7 +540,6 @@ export default function AudioModifier() {
     } catch { /* source ended */ }
   }, [tempoChanger.enabled, tempoChanger.rate]);
 
-  // ── Trim drag ────────────────────────────────────────────────────────────────
   const onTrimMouseDown = (e, handle) => {
     e.stopPropagation();
     trimDragging.current = handle;
@@ -571,7 +561,6 @@ export default function AudioModifier() {
     window.removeEventListener('mouseup', onTrimMouseUp);
   }, [onTrimMouseMove]);
 
-  // ── Export ───────────────────────────────────────────────────────────────────
   const exportAudio = async () => {
     if (!audioBuffer || processing) return;
     setProcessing(true);
@@ -712,7 +701,6 @@ export default function AudioModifier() {
     return buf;
   }
 
-  // ── Drop handlers ────────────────────────────────────────────────────────────
   const onDrop = (e) => {
     e.preventDefault(); setIsDragging(false);
     const f = e.dataTransfer.files[0];
@@ -792,7 +780,6 @@ export default function AudioModifier() {
       </section>
 
       {!file ? (
-        // ── Drop zone ──────────────────────────────────────────────────────────
         <motion.label initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
           ref={dropRef}
           onDrop={onDrop}
@@ -811,7 +798,6 @@ export default function AudioModifier() {
           <input ref={fileInputRef} type="file" accept="audio/*" className="hidden" onChange={e => { const f = e.target.files[0]; if (f) loadFile(f); }} />
         </motion.label>
       ) : (
-        // ── Editor layout ──────────────────────────────────────────────────────
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
 
           {/* Left — player + trimmer */}

@@ -26,11 +26,8 @@ function detectPWASupport() {
   const isIOSSafari = isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
   if (isIOSSafari) return true;
 
-  // Firefox — does not support beforeinstallprompt on any platform
-  // Matches: Firefox, FxiOS (Firefox iOS), Focus
   if (/Firefox|FxiOS/.test(ua) && !/Seamonkey/.test(ua)) return false;
 
-  // Opera Mini — no service worker support
   if (/Opera Mini/.test(ua)) return false;
 
   // In-app WebViews (FBAV = Facebook, Instagram etc.)

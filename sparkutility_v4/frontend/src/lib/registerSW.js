@@ -1,13 +1,3 @@
-/**
- * registerSW.js
- * Registers the service worker and surfaces install progress so the PWA
- * loading bar can show real-time feedback when the app is opened for the
- * first time or after an update.
- *
- * Progress callbacks are dispatched as a custom DOM event:
- *   window.dispatchEvent(new CustomEvent('sw-progress', { detail: { pct } }))
- */
-
 export function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (!import.meta.env.PROD) return;
@@ -17,7 +7,6 @@ export function registerServiceWorker() {
   navigator.serviceWorker.addEventListener('message', (event) => {
     const { data } = event;
     if (!data) return;
-
     if (data.type === 'SW_INSTALL_PROGRESS') {
       const pct = Math.round((data.current / data.total) * 100);
       window.dispatchEvent(new CustomEvent('sw-progress', { detail: { pct, phase: data.phase } }));
@@ -30,7 +19,6 @@ export function registerServiceWorker() {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
       .then((reg) => {
-        // If a new SW is installing right now, track its state changes.
         const trackInstalling = (sw) => {
           if (!sw) return;
           sw.addEventListener('statechange', () => {

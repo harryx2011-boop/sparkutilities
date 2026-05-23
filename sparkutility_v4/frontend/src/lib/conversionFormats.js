@@ -37,8 +37,6 @@ export const AUDIO_EXTRACT_TARGETS = ['MP3', 'WAV', 'FLAC', 'AAC', 'OGG', 'M4A',
 export const ALL_ACCEPTS = Object.values(FORMAT_MAP).map(f => f.accepts).join(',');
 export const ALL_MIME_TYPES = 'video/*,audio/*,image/*,.mts,.m2ts,.pdf,.csv,.xlsx,.xls,.json,.xml,.txt,.html,.md,.rtf,.yaml,.yml,.toml,.ini,.log,.js,.ts,.jsx,.tsx,.css';
 
-// Detect category from extension first (most reliable), then MIME prefix as
-// a fallback for files with unusual or missing extensions.
 export const getFileCategory = (file) => {
   const ext = (file.name.split('.').pop() || '').toLowerCase();
   for (const [cat, info] of Object.entries(FORMAT_MAP)) {
@@ -93,8 +91,6 @@ const EXTRACT_CODEC_BY_FORMAT = {
   opus: 'libopus',
 };
 
-// Build an integer scale clamped to even numbers (some encoders require it for video,
-// and it keeps image scaling predictable).
 function buildImageScaleFilter(image) {
   if (!image || (image.mode !== 'pixels' && image.mode !== 'percent')) return null;
   if (image.mode === 'pixels') {
@@ -111,11 +107,9 @@ function buildImageScaleFilter(image) {
     if (h > 0) return `scale=-1:${h}`;
     return null;
   }
-  // percent mode
   const pct = parseFloat(image.percent);
   if (!pct || pct <= 0 || pct > 1000) return null;
   const factor = pct / 100;
-  // Use iw/ih so ffmpeg evaluates at run time.
   return `scale=trunc(iw*${factor}/2)*2:trunc(ih*${factor}/2)*2`;
 }
 
@@ -125,7 +119,6 @@ function clampInt(value, min, max, fallback) {
   return Math.min(max, Math.max(min, n));
 }
 
-// Resolve a {enabled,start,end} trim object to {ss, duration} or null.
 function resolveTrim(trim) {
   if (!trim || !trim.enabled) return null;
   const startSec = parseTimecode(trim.start);
@@ -139,22 +132,13 @@ function resolveTrim(trim) {
   };
 }
 
-/**
- * Builds a validated ffmpeg argument array.
- * customFlags from AdvancedSettings is intentionally NOT appended —
- * accepting raw strings would be an argument-injection vector.
- */
 export function buildFFmpegArgs({
   inputName, outputName, category, targetFormat, compression, settings,
   extractAudio = false, trim = null, gif = null,
 }) {
-  // Use all available CPU threads for FFmpeg WASM. The MT core runs in Web
-  // Workers which don't block the UI thread, so we don't need to reserve one.
-  // Falls back to 4 if the browser doesn't expose hardwareConcurrency.
   const threads = Math.max(1, navigator.hardwareConcurrency || 4);
   const args = ['-threads', String(threads)];
 
-  // Place -ss BEFORE -i for fast seek, then -t (duration) AFTER -i for precise length.
   const trimResolved = resolveTrim(trim);
   if (trimResolved) {
     args.push('-ss', trimResolved.ss);
@@ -164,7 +148,6 @@ export function buildFFmpegArgs({
     args.push('-t', trimResolved.duration.toFixed(3));
   }
 
-  // Audio extraction from a video file: drop video, pick a sensible audio codec.
   if (category === 'video' && extractAudio) {
     const codec = EXTRACT_CODEC_BY_FORMAT[targetFormat] || 'libmp3lame';
     args.push('-vn', '-c:a', codec);
@@ -176,7 +159,6 @@ export function buildFFmpegArgs({
     return args;
   }
 
-  // GIF maker: a focused arg list — no codec/CRF/audio, just the palette filter.
   if (category === 'video' && targetFormat === 'gif') {
     const gifFps = clampInt(gif?.fps, 1, 60, 12);
     const gifWidth = clampInt(gif?.width, 32, 1920, 480);
@@ -196,9 +178,6 @@ export function buildFFmpegArgs({
     if (codec === 'libx264' || codec === 'libx265') {
       const crf = VIDEO_CRF[compression] ?? 23;
       args.push('-crf', String(crf));
-      // Use ultrafast for compact/balanced (speed priority) and medium for lossless.
-      // This gives a 3-5× encode speed boost on regular workstations at the cost
-      // of ~10-15% larger file size vs medium — acceptable for on-demand conversions.
       const preset = compression === 'lossless' ? 'medium' : 'ultrafast';
       args.push('-preset', preset);
     } else if (codec === 'libvpx-vp9') {

@@ -39,15 +39,6 @@ const STATUS_CONFIG = {
   error:      { color: 'text-destructive',      bg: 'bg-destructive/10',   label: 'Error'        },
 };
 
-// ── FFmpeg singleton ──────────────────────────────────────────────────────────
-// Two cores ship side-by-side and the right one is picked at runtime:
-//
-//   • core-mt (multi-threaded) — needs SharedArrayBuffer, which needs
-//     crossOriginIsolated === true (COOP same-origin + COEP require-corp on the
-//     navigation response). On a page that has SAB available, this is 3-5×
-//     faster on video and uses every CPU thread.
-//   • core (single-threaded)  — works in any browser/origin context. Slower,
-//     but it's the only path that survives when the service worker has
 //     stripped COOP/COEP from a cached navigation, when the production host
 //     forgot to set the headers, or when SAB is gated behind a flag.
 //
@@ -86,7 +77,6 @@ async function getFFmpeg() {
       : undefined;
 
     if (SAB_AVAILABLE) {
-      // Fast path — multi-threaded core with one Web Worker per CPU thread.
       try {
         await ff.load({
           coreURL:   await toBlobURL('/ffmpeg-core.js',        'text/javascript'),
@@ -96,7 +86,6 @@ async function getFFmpeg() {
         ffmpegEngine = 'mt';
       } catch (mtErr) {
         // Defensive fallback: SAB was reported available but core-mt still
-        // refused to start (rare — usually a CSP / CORS regression on the
         // worker URL). Try the single-threaded core before surfacing an error.
         console.warn('[ffmpeg] core-mt failed, falling back to single-threaded:', mtErr?.message || mtErr);
         await ff.load({
@@ -106,7 +95,6 @@ async function getFFmpeg() {
         ffmpegEngine = 'st';
       }
     } else {
-      // Single-threaded core — works without SharedArrayBuffer / cross-origin
       // isolation. The cost is real (3-5× slower on video) but it's the only
       // way to keep the converter usable when the host hasn't set COOP/COEP
       // or when the service worker is serving cached navigations.
@@ -127,7 +115,6 @@ async function getFFmpeg() {
 
 export { SAB_AVAILABLE };
 
-// ── Pre-conversion size estimate helpers ─────────────────────────────────────
 // Rough per-format output-size factors (relative to input).
 // Used only when no compression preset is selected; otherwise CompressionOptions
 // already shows its own estimate. Values are intentionally conservative.
@@ -147,7 +134,6 @@ function getFormatEstimate(fileSize, fmt) {
   return `${(est / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// ── Output MIME map ──────────────────────────────────────────────────────────
 const OUTPUT_MIME = {
   mp4: 'video/mp4', webm: 'video/webm', mkv: 'video/x-matroska',
   avi: 'video/x-msvideo', mov: 'video/quicktime', wmv: 'video/x-ms-wmv',
@@ -181,7 +167,6 @@ function formatDuration(seconds) {
   return `${h}h ${m % 60}m`;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
 const ConversionCard = forwardRef(function ConversionCard(
   { file, category, selected = false, onSelect, onRemove, onConvert, dragHandleProps, initialTargetFormat = '' },
   ref
@@ -235,7 +220,6 @@ const ConversionCard = forwardRef(function ConversionCard(
 
   const appendLog = (msg) => setLogs(prev => [...prev, msg]);
 
-  // ── Conversion ───────────────────────────────────────────────────────────────
   const runConversion = async () => {
     const targetForRun = effectiveTargetFormat;
     if (!targetForRun) return;
@@ -256,7 +240,6 @@ const ConversionCard = forwardRef(function ConversionCard(
     const inputName      = `input_${Date.now()}.${sourceExtLower}`;
     const outputName     = `output_${Date.now()}.${ext}`;
 
-    // ── Documents ────────────────────────────────────────────────────────────
     if (category === 'document') {
       try {
         appendLog(`Reading ${file.name}...`);
@@ -294,7 +277,6 @@ const ConversionCard = forwardRef(function ConversionCard(
       return;
     }
 
-    // ── SVG ───────────────────────────────────────────────────────────────────
     if (category === 'image' && sourceExtLower === 'svg') {
       try {
         appendLog(`Reading ${file.name}...`);
@@ -335,7 +317,6 @@ const ConversionCard = forwardRef(function ConversionCard(
       return;
     }
 
-    // ── GPU image conversion ─────────────────────────────────────────────────
     if (canUseGPU(category, sourceExtLower, ext)) {
       try {
         appendLog(`Using GPU-accelerated conversion (WebGL/Canvas)...`);
@@ -368,7 +349,6 @@ const ConversionCard = forwardRef(function ConversionCard(
       return;
     }
 
-    // ── FFmpeg ────────────────────────────────────────────────────────────────
     await runFFmpegConversion({ ext, sourceExtLower, inputName, outputName, targetForRun });
   };
 
@@ -467,7 +447,6 @@ const ConversionCard = forwardRef(function ConversionCard(
       appendLog('Reading output...');
       const data = await ff.readFile(outputName);
 
-      // Guard against silent failures — typically happens when a codec
       // is missing from the WASM core (e.g. libopus not in the single-
       // threaded fallback) or when the input has no audio stream and
       // extractAudio is set. ffmpeg may exit 0 but write nothing.
@@ -550,7 +529,6 @@ const ConversionCard = forwardRef(function ConversionCard(
     },
   }), [status, effectiveTargetFormat, runConversion, file.name, category]);
 
-  // ── Download ────────────────────────────────────────────────────────────────
   const handleDownload = () => {
     const out = outputRef.current;
     if (!out) return;

@@ -18,8 +18,8 @@ import { getFileCategory } from '@/lib/conversionFormats';
 import { useSettings } from '@/context/SettingsContext';
 import { useSidebar } from '@/context/SidebarContext';
 
-const HISTORY_KEY    = 'sparkutility_history_v1';
-const HISTORY_CAP    = 500;
+const HISTORY_KEY = 'sparkutility_history_v1';
+const HISTORY_CAP = 500;
 
 export default function FileConverter() {
   const { settings } = useSettings();
@@ -31,20 +31,11 @@ export default function FileConverter() {
   const [zipping, setZipping]       = useState(false);
   const cardRefs = useRef(new Map());
 
-  // ── Re-apply intent (from ConversionHistory "Re-apply" button) ────────────
-  // When the user clicks "Re-apply" on a past conversion, we stash the desired
-  // category + targetFormat here so the next dropped file in that category gets
-  // its ConversionCard pre-selected. The intent is single-shot: it clears as
-  // soon as a matching file is queued, or the user dismisses the banner.
   const [pendingReapply, setPendingReapply] = useState(null);
-  // initialTargetByFileId tells each ConversionCard which target to seed; we
-  // delete the entry after read so re-mounts don't keep re-seeding.
   const initialTargetByFileIdRef = useRef(new Map());
 
-  // ── Dropzone pulse (Ctrl+V visual feedback) ───────────────────────────────
   const [pastePulse, setPastePulse] = useState(false);
 
-  // Report batch conversion activity to the sidebar
   useEffect(() => {
     if (batching) {
       registerWorkflow('file-converter', { label: 'File Converter', indeterminate: true });
@@ -53,10 +44,6 @@ export default function FileConverter() {
     }
   }, [batching, registerWorkflow, unregisterWorkflow]);
 
-  // ── Windows Explorer / OS "Open with" integration ─────────────────────────
-  // When the installed PWA is launched as a file handler (right-click → Open
-  // with → SparkUtilities), Chromium fires window.launchQueue with handles for
-  // every selected file. We pull them into the converter queue automatically.
   useEffect(() => {
     if (!('launchQueue' in window)) return;
     window.launchQueue.setConsumer(async (params) => {
@@ -66,7 +53,7 @@ export default function FileConverter() {
         try {
           const file = await handle.getFile();
           if (file) incoming.push(file);
-        } catch { /* permission revoked or handle expired — skip */ }
+        } catch {}
       }
       if (incoming.length) {
         const entries = incoming.map(f => ({
@@ -79,7 +66,6 @@ export default function FileConverter() {
     });
   }, []);
 
-  // ── Re-apply broadcast listener ──────────────────────────────────────────
   // ConversionHistory dispatches `sparkutility:reapply` with the past entry's
   // category + targetFormat. We stash it as a pending intent; the next
   // matching file that lands in the queue gets its target pre-selected.
@@ -113,7 +99,6 @@ export default function FileConverter() {
     setFiles(prev => [...prev, ...fileEntries]);
   }, []);
 
-  // ── Paste-to-Convert (Ctrl+V) ────────────────────────────────────────────
   // Listens for paste events while this route is mounted and pulls in:
   //   1) files from clipboardData.files (e.g. copied from Explorer)
   //   2) image data from clipboardData.items (e.g. Win+Shift+S screenshot)
@@ -222,7 +207,6 @@ export default function FileConverter() {
   // True when at least one queued file is a document — gates the document tools
   const hasDocuments = files.some(f => f.category === 'document');
 
-  // ── Persistent history ────────────────────────────────────────────────────
   const [history, setHistory] = useState(() => {
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
@@ -238,7 +222,6 @@ export default function FileConverter() {
     } catch { /* storage quota exceeded — silently ignore */ }
   }, [history]);
 
-  // ── File management ───────────────────────────────────────────────────────
   const handleRemove = useCallback((fileToRemove) => {
     setFiles(prev => {
       const next = prev.filter(f => f.file !== fileToRemove);
@@ -274,10 +257,9 @@ export default function FileConverter() {
 
   const handleClearHistory = useCallback(() => {
     setHistory([]);
-    try { localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ }
+    try { localStorage.removeItem(HISTORY_KEY); } catch {}
   }, []);
 
-  // ── Selection ─────────────────────────────────────────────────────────────
   const handleSelect = useCallback((file) => {
     const entry = files.find(f => f.file === file);
     if (!entry) return;
@@ -289,27 +271,11 @@ export default function FileConverter() {
     });
   }, [files]);
 
-  // ── Refs ──────────────────────────────────────────────────────────────────
   const setCardRef = useCallback((id) => (instance) => {
     if (instance) cardRefs.current.set(id, instance);
     else cardRefs.current.delete(id);
   }, []);
 
-  // ── Batch convert ─────────────────────────────────────────────────────────
-  // Parallel two-lane scheduler:
-  //   • Fast lane (GPU image / SVG / document) — fully concurrent. These
-  //     paths are bounded by GPU throughput or pure-JS string work and don't
-  //     compete with each other for the same FFmpeg WASM heap, so running
-  //     them in parallel is essentially free.
-  //   • Slow lane (FFmpeg, multi- or single-threaded) — capped concurrency.
-  //     Each FFmpeg job already uses every CPU thread when running mt, so
-  //     running more than ~2 concurrent jobs just contends for the same
-  //     cores and balloons WASM memory. Cap at MAX_FFMPEG_CONCURRENT (=2)
-  //     so the second video starts the moment the first finishes without
-  //     stalling the GPU lane.
-  // Net effect: a queue of (video.mp4, image.png, image.jpg, video.mov)
-  // converts in roughly max(t_video1 + t_video2, t_image1 + t_image2)
-  // wall time instead of the old strictly-sequential sum.
   const MAX_FFMPEG_CONCURRENT = 2;
   const runBatch = useCallback(async () => {
     if (batching) return;
@@ -323,9 +289,6 @@ export default function FileConverter() {
         if (hint === 'mt' || hint === 'st') slowLane.push(card);
         else fastLane.push(card);
       }
-      // Slow-lane worker: pulls one card at a time off the slowLane queue.
-      // Running MAX_FFMPEG_CONCURRENT of these in parallel gives us the
-      // pipelining we want without thrashing the FFmpeg WASM heap.
       const slowQueue = [...slowLane];
       const slowWorker = async () => {
         while (slowQueue.length) {
@@ -334,9 +297,7 @@ export default function FileConverter() {
         }
       };
       await Promise.all([
-        // Fast lane: every GPU/SVG/document card concurrently
         ...fastLane.map(c => c.convert()),
-        // Slow lane: capped concurrency
         ...Array.from({ length: Math.min(MAX_FFMPEG_CONCURRENT, slowLane.length) }, slowWorker),
       ]);
     } finally {
@@ -344,7 +305,6 @@ export default function FileConverter() {
     }
   }, [batching]);
 
-  // ── Remove selected / last ────────────────────────────────────────────────
   const removeSelected = useCallback(() => {
     if (selectedIds.size === 0) {
       setFiles(prev => (prev.length === 0 ? prev : prev.slice(0, -1)));
@@ -354,7 +314,6 @@ export default function FileConverter() {
     setSelectedIds(new Set());
   }, [selectedIds]);
 
-  // ── Drag-to-reorder ───────────────────────────────────────────────────────
   const handleDragEnd = useCallback((result) => {
     if (!result.destination) return;
     setFiles(prev => {
@@ -365,7 +324,6 @@ export default function FileConverter() {
     });
   }, []);
 
-  // ── Download all as ZIP ───────────────────────────────────────────────────
   const handleDownloadAllZip = useCallback(async () => {
     if (zipping) return;
     setZipping(true);
@@ -531,7 +489,6 @@ export default function FileConverter() {
           )}
         </AnimatePresence>
 
-        {/* File queue with drag-to-reorder */}
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="file-queue">
             {(provided) => (
@@ -542,9 +499,6 @@ export default function FileConverter() {
               >
                 <AnimatePresence>
                   {files.map((entry, index) => {
-                    // Pull-once: any re-apply target seeded for this id is
-                    // consumed at mount so re-renders don't re-overwrite the
-                    // user's later format choices.
                     const seedMap = initialTargetByFileIdRef.current;
                     const seed = seedMap.get(entry.id) || '';
                     if (seed) seedMap.delete(entry.id);

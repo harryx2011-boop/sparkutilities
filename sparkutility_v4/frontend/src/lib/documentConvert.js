@@ -1,10 +1,3 @@
-// Document conversion router. ffmpeg.wasm doesn't handle documents, so we do
-// it natively (text formats) or via lazy-loaded libraries (PDF, XLSX).
-//
-// Public API:
-//   convertDocument(file, sourceExt, targetExt) → Promise<{ data: Uint8Array, ext: string }>
-// Both extensions are lowercase, no leading dot.
-
 import {
   toBytes, fromBytes,
   parseCSV, rowsToCSV,
@@ -53,11 +46,8 @@ export function isDocumentExt(ext) {
   return ext in DOCUMENT_OUTPUT_MIME;
 }
 
-// ── PDF helpers (lazy-loaded) ────────────────────────────────────────────────
 async function getPdfJs() {
   const mod = await import('pdfjs-dist/build/pdf.mjs');
-  // Vite+esm: pdfjs needs a worker. The legacy ESM build registers a default
-  // worker URL; if missing, fall back to disabling the worker.
   try {
     const workerUrl = (await import('pdfjs-dist/build/pdf.worker.mjs?url')).default;
     mod.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -92,10 +82,7 @@ async function pdfExtractText(file) {
   return pages;
 }
 
-// ── DOCX helper (lazy-loaded via mammoth) ────────────────────────────────────
 async function getMammoth() {
-  // mammoth is listed in package.json; import it dynamically so it is only
-  // loaded when a .docx file is actually processed.
   const mod = await import('mammoth');
   return mod.default || mod;
 }
@@ -141,9 +128,6 @@ async function textToPdf(text, compression = null) {
   return new Uint8Array(await blob.arrayBuffer());
 }
 
-// ── XLSX helpers (lazy-loaded read-excel-file / write-excel-file) ────────────
-// These libs only export from explicit /browser, /node, /universal subpaths —
-// no main entry — so we import the browser build directly.
 async function readXlsxRows(file) {
   const mod = await import('read-excel-file/browser');
   const readXlsx = mod.default || mod;
@@ -154,22 +138,16 @@ async function readXlsxRows(file) {
 async function writeXlsxFromRows(rows) {
   const mod = await import('write-excel-file/browser');
   const writeXlsx = mod.default || mod;
-  // write-excel-file expects an array of arrays of cell objects.
   const data = rows.map((row, rowIdx) =>
     row.map(value => ({
       value: value == null ? '' : (typeof value === 'object' ? JSON.stringify(value) : value),
       type: typeof value === 'number' ? Number : String,
-      // First row gets bold styling so it reads as a header.
       ...(rowIdx === 0 ? { fontWeight: 'bold' } : {}),
     })),
   );
   const blob = await writeXlsx(data, { fileFormat: 'xlsx' });
   return new Uint8Array(await blob.arrayBuffer());
 }
-
-// ── Normalized intermediate representations ──────────────────────────────────
-// Tabular data → 2D array of strings, headers in row 0.
-// Document data → plain string (text/markdown/html flavored).
 
 async function readAsRows(file, sourceExt) {
   if (sourceExt === 'csv') return parseCSV(await file.text());
@@ -201,10 +179,6 @@ async function readAsText(file, sourceExt) {
   return file.text();
 }
 
-// ── Document compression helpers ─────────────────────────────────────────────
-// 'compact'  — strip redundant whitespace / comments from text-based formats; smaller PDF font
-// 'balanced' — standard output (default)
-// 'lossless' — full fidelity, pretty-print everything
 function compressText(text, compression) {
   if (compression === 'compact') {
     return text
@@ -224,7 +198,6 @@ function compressText(text, compression) {
   return text;
 }
 
-// ── Main router ──────────────────────────────────────────────────────────────
 export async function convertDocument(file, sourceExt, targetExt, compression = null) {
   const src = sourceExt.toLowerCase();
   const dst = targetExt.toLowerCase();
@@ -236,8 +209,6 @@ export async function convertDocument(file, sourceExt, targetExt, compression = 
   }
 
   const ct = (s) => compressText(s, compression);
-
-  // ── Tabular conversions ────────────────────────────────────────────────────
   if (ROW_FORMATS.has(src) || (src === 'json' && ROW_FORMATS.has(dst))) {
     const rows = await readAsRows(file, src);
     if (dst === 'csv') return { data: toBytes(ct(rowsToCSV(rows))), ext: 'csv' };
@@ -270,7 +241,6 @@ export async function convertDocument(file, sourceExt, targetExt, compression = 
     }
   }
 
-  // ── JSON ↔ text/xml conversions ────────────────────────────────────────────
   if (src === 'json') {
     const text = await file.text();
     const obj = JSON.parse(text);
@@ -291,7 +261,6 @@ export async function convertDocument(file, sourceExt, targetExt, compression = 
     if (dst === 'pdf') return { data: await textToPdf(text, compression), ext: 'pdf' };
   }
 
-  // ── HTML/MD/TXT/PDF as document text ───────────────────────────────────────
   if (src === 'html' || src === 'htm') {
     const text = await file.text();
     if (dst === 'txt') return { data: toBytes(ct(htmlToText(text))), ext: 'txt' };
@@ -331,7 +300,6 @@ export async function convertDocument(file, sourceExt, targetExt, compression = 
   }
 
 
-  // ── DOCX / DOC conversions ─────────────────────────────────────────────────
   if (src === 'docx' || src === 'doc') {
     if (dst === 'txt') {
       const text = await docxExtractText(file);
@@ -358,9 +326,6 @@ export async function convertDocument(file, sourceExt, targetExt, compression = 
   throw new Error(`Document conversion not supported: ${src.toUpperCase()} → ${dst.toUpperCase()}`);
 }
 
-// ── Plain text passthrough for code/config files ─────────────────────────────
-// yaml, yml, toml, ini, log, js, ts, jsx, tsx, css → txt/md/html/pdf
-// These are treated as plain text since they're already UTF-8.
 export async function convertDocumentExtended(file, sourceExt, targetExt) {
   const src = sourceExt.toLowerCase();
   const dst = targetExt.toLowerCase();

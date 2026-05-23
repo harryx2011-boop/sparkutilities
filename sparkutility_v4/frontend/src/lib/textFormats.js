@@ -2,14 +2,12 @@
 // Each pair below is a one-direction transform between text formats.
 // Higher-level routing lives in documentConvert.js.
 
-// ── Encoding helpers ─────────────────────────────────────────────────────────
 const enc = new TextEncoder();
 const dec = new TextDecoder('utf-8');
 
 export const toBytes = (s) => enc.encode(s);
 export const fromBytes = (u8) => dec.decode(u8);
 
-// ── CSV parser ───────────────────────────────────────────────────────────────
 // Handles quoted fields, embedded commas, doubled quotes, and CRLF/LF newlines.
 // Produces an array of arrays (rows of strings).
 export function parseCSV(input) {
@@ -49,7 +47,6 @@ export function rowsToCSV(rows) {
   return rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
 }
 
-// ── CSV ↔ JSON ───────────────────────────────────────────────────────────────
 // First row of CSV becomes object keys.
 export function csvToJSON(text) {
   const rows = parseCSV(text);
@@ -82,7 +79,6 @@ export function jsonToCSV(value) {
   return rowsToCSV([header, ...rows]);
 }
 
-// ── XML ↔ JSON (simple) ──────────────────────────────────────────────────────
 // XML is tree-shaped; we map attributes onto `@attrs` and children onto keys.
 // Repeated child names collapse into arrays. This isn't a full XML model, but
 // it handles every spreadsheet/exchange XML you're realistically going to drop.
@@ -146,7 +142,6 @@ function serializeNode(name, value) {
   return `<${name}${attrStr}>${textPart}${inner}</${name}>`;
 }
 
-// ── HTML ↔ Markdown / Text ───────────────────────────────────────────────────
 // Lightweight plain-text and minimal markdown extraction. For richer HTML→MD,
 // users can paste through the blog editor's Markdown body — we don't bundle
 // turndown to keep the lib footprint small.

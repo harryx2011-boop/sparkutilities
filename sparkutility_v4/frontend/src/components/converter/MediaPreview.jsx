@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { formatFileSize } from '@/lib/conversionFormats';
 
-// MIME hint by extension — falls back to file.type, then to a reasonable guess.
 const MIME_HINTS = {
   mp4: 'video/mp4', webm: 'video/webm', mkv: 'video/x-matroska',
   mov: 'video/quicktime', avi: 'video/x-msvideo', flv: 'video/x-flv',
@@ -38,8 +37,6 @@ const MediaPreview = forwardRef(function MediaPreview(
   const origVideoRef = useRef(null);
   const origAudioRef = useRef(null);
 
-  // Browser inferred media kind for the output. The preview "after" panel may
-  // be a video, audio, or image depending on what we converted to.
   const outKind = useMemo(() => {
     if (!output?.ext) return null;
     const mime = MIME_HINTS[output.ext] || '';
@@ -57,7 +54,6 @@ const MediaPreview = forwardRef(function MediaPreview(
     if (outUrl) URL.revokeObjectURL(outUrl);
   }, [outUrl]);
 
-  // Expose the playback element so the trimmer can read currentTime.
   useImperativeHandle(ref, () => ({
     getCurrentTime: () => {
       const el = origVideoRef.current || origAudioRef.current;

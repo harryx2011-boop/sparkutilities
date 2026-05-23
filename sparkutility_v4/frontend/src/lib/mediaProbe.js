@@ -1,13 +1,3 @@
-// Lightweight metadata extraction.
-//
-// quickProbe() uses the browser's native media decoders — instant, but limited
-// (only a handful of stats and only formats the browser can decode natively).
-//
-// deepProbe() runs an ffmpeg `-i` pass with no output, scrapes the log buffer
-// and parses what ffmpeg reports about the file. Catches MTS/FLV/etc. that
-// the browser can't introspect.
-
-// ── quick probe (HTMLMediaElement / Image) ────────────────────────────────────
 function probeImage(file) {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
@@ -73,7 +63,6 @@ export async function quickProbe(file, category) {
   return null;
 }
 
-// ── ffmpeg log parser ─────────────────────────────────────────────────────────
 // Sample lines we care about:
 //   Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'input.mp4':
 //   Duration: 00:01:23.45, start: 0.000000, bitrate: 4567 kb/s

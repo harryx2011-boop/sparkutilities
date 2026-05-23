@@ -18,14 +18,12 @@ export const DEFAULT_SETTINGS = {
     deleteFile:     'Delete',     // FileConverter delete selected
     clearSelection: 'Escape',     // FileConverter clear selection
     playPause:      'Space',      // AudioModifier play/pause
-    // ── Image Editor ─────────────────────────────────────────────────────────
     imageUndo:      'Mod+z',       // Cmd+Z on Mac, Ctrl+Z elsewhere
     imageRedo:      'Mod+Shift+z', // Cmd/Ctrl+Shift+Z (Cmd/Ctrl+Y also accepted via second binding)
     imageRedoAlt:   'Mod+y',
     imageToolPen:   'p',          // single-key tool switches when no modifier
     imageToolBrush: 'b',
     imageToolEraser:'e',
-    // ── Content Previewer ───────────────────────────────────────────────────
     previewerPlayPause: 'Space',  // Toggle the embedded video preview
   },
   // Appearance

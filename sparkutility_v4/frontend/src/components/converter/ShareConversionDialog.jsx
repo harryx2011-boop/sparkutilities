@@ -7,8 +7,6 @@ import { Label } from '@/components/ui/label';
 import { useBranding } from '@/context/BrandingContext';
 import { formatFileSize } from '@/lib/conversionFormats';
 
-// Renders the brag card to a PNG via html2canvas. Imports lazily so this
-// 50KB dep doesn't bloat the entry chunk.
 async function renderToBlob(node) {
   const { default: html2canvas } = await import('html2canvas');
   const canvas = await html2canvas(node, {
@@ -63,14 +61,12 @@ export default function ShareConversionDialog({ open, onClose, file, sourceForma
     try {
       const blob = await renderToBlob(cardRef.current);
       if (!blob) return;
-      // Clipboard image support varies by browser/OS — fall back gracefully.
       if (navigator.clipboard && window.ClipboardItem) {
         // eslint-disable-next-line no-undef
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       } else {
-        // Fallback: download instead.
         await onDownload();
       }
     } catch {

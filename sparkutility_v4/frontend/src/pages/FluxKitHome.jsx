@@ -10,9 +10,6 @@ import FluxBackdrop from '@/components/fluxkit/FluxBackdrop';
 
 const FK_SETTINGS_KEY = 'aio_fluxkit_settings';
 
-// Shared FluxKit design tokens — mirror Web Dev Assets, Productivity, etc.
-// Headings use Cormorant Garamond (editorial), body uses Montserrat, code
-// labels use JetBrains Mono. GOLD is the canonical FluxKit accent.
 const FH   = { fontFamily: '"Cormorant Garamond","Georgia",serif', fontWeight: 700, letterSpacing: '-0.02em' };
 const FB   = { fontFamily: '"Montserrat","Inter",sans-serif' };
 const FM   = { fontFamily: '"JetBrains Mono",monospace' };
@@ -374,7 +371,6 @@ export default function FluxKitHome() {
           Developer Toolkit · Browser-Native · Zero Uploads
         </motion.div>
 
-        {/* ── EDITORIAL HEADLINE ── (Cormorant Garamond w/ leading word in GOLD) */}
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
           style={{
@@ -434,7 +430,6 @@ export default function FluxKitHome() {
           <div className="h-px w-16" style={{ background: 'rgba(250,204,21,0.1)' }} />
         </motion.div>
 
-      {/* ── STATS BAR ── */}
       <section className="pb-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -460,7 +455,6 @@ export default function FluxKitHome() {
         </motion.div>
       </section>
 
-      {/* ── WHY FLUXKIT ── */}
       <section className="pb-14">
         <motion.p
           initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
@@ -494,12 +488,10 @@ export default function FluxKitHome() {
         </div>
       </section>
 
-      {/* ── LIVE CODING BACKGROUND ── */}
       <div className="relative overflow-hidden" aria-hidden="true">
         <LiveCodeBackground disabled={settings.lowPowerMode} />
       </div>
 
-      {/* ── TOOL CATEGORIES ── */}
       <section ref={portfolioRef} className="pb-16">
         <motion.p
           initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
@@ -543,7 +535,6 @@ export default function FluxKitHome() {
         </div>
       </section>
 
-      {/* ── SPARKUTILITIES CONNECTOR ── (re-stylized in FluxKit gold, no purple) */}
       {showConnector && <section className="pb-12">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -577,7 +568,6 @@ export default function FluxKitHome() {
         </motion.div>
       </section>}
 
-        {/* ── FOOTER NOTE ── (matches the branches' "all FluxKit tools run 100% in-browser" pin) */}
         <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           transition={{ delay: 0.15 }} className="mt-2 text-center">
           <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl"

@@ -11,9 +11,6 @@ function isStandalone() {
     || window.navigator?.standalone === true;
 }
 
-// iOS Safari doesn't fire beforeinstallprompt — users have to use the
-// share-sheet "Add to Home Screen" flow. We sniff the UA for that one case
-// only so we can show the right instructions.
 function isIOSSafari() {
   if (typeof window === 'undefined') return false;
   const ua = window.navigator.userAgent || '';
@@ -71,7 +68,6 @@ export default function PWAInstall() {
       const choice = await deferredPrompt.userChoice;
       if (choice?.outcome === 'accepted') setInstalled(true);
     } catch {
-      // The user dismissed the prompt or it errored — nothing to do.
     } finally {
       setDeferredPrompt(null);
       setPending(false);

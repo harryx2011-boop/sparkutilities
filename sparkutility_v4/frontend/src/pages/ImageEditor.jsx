@@ -14,7 +14,6 @@ import { useSettings } from '@/context/SettingsContext';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { playSuccessChime, notifyTaskComplete } from '@/lib/notificationSound';
 
-// ─── Filter presets (CSS-based, used in Filters tab) ─────────────────────────
 const FILTERS = [
   { key: 'none',      label: 'Original',  css: '' },
   { key: 'grayscale', label: 'Grayscale', css: 'grayscale(100%)' },
@@ -28,9 +27,6 @@ const FILTERS = [
   { key: 'fade',      label: 'Fade',      css: 'brightness(110%) contrast(85%) saturate(80%)' },
 ];
 
-// ─── Lightroom-style adjustment defaults ─────────────────────────────────────
-// All sliders centred at 0; positive/negative ranges chosen so a single full
-// sweep is enough to make a visible but not destructive change.
 const DEFAULT_ADJUSTMENTS = {
   exposure:    0,   // -2 … +2 stops
   contrast:    0,   // -100 … +100
@@ -51,10 +47,6 @@ const DEFAULT_TRANSFORM = {
   zoom:     100,
 };
 
-// ─── Lightroom-style pixel pipeline ──────────────────────────────────────────
-// Runs over an ImageData buffer, mutating it in place. Order matters: exposure
-// first (linear gain), then contrast, then per-luminance lifts, then channel
-// shifts, then saturation/vibrance.
 function applyLightroomAdjustments(imageData, adj) {
   const d = imageData.data;
   const exposureGain = Math.pow(2, adj.exposure); // ±2 stops → ×0.25 .. ×4
@@ -71,25 +63,19 @@ function applyLightroomAdjustments(imageData, adj) {
   for (let i = 0; i < d.length; i += 4) {
     let r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
 
-    // Exposure (linear gain)
     r *= exposureGain; g *= exposureGain; b *= exposureGain;
 
-    // Contrast — pivot at mid-grey
     r = (r - 0.5) * contrastFactor + 0.5;
     g = (g - 0.5) * contrastFactor + 0.5;
     b = (b - 0.5) * contrastFactor + 0.5;
 
-    // Per-pixel luminance for highlight/shadow targeting
     const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-    // Highlights: pull down or lift the upper half. Easing is luma-weighted
-    // so deep shadows aren't touched.
     if (lum > 0.5) {
-      const t = (lum - 0.5) * 2;          // 0..1 across upper range
+      const t = (lum - 0.5) * 2;
       const factor = 1 + hi * t * 0.5;
       r *= factor; g *= factor; b *= factor;
     }
-    // Shadows: same idea, lower half.
     if (lum < 0.5) {
       const t = (0.5 - lum) * 2;
       const factor = 1 + sh * t * 0.5;
@@ -100,14 +86,12 @@ function applyLightroomAdjustments(imageData, adj) {
       r *= factor; g *= factor; b *= factor;
     }
 
-    // Whites: extend pure bright end (pixels already > 0.85)
     if (lum > 0.85) {
       const t = (lum - 0.85) / 0.15;
       r += wh * t * 0.3;
       g += wh * t * 0.3;
       b += wh * t * 0.3;
     }
-    // Blacks: extend pure dark end (pixels already < 0.15)
     if (lum < 0.15) {
       const t = (0.15 - lum) / 0.15;
       r -= bl * t * 0.3;
@@ -115,14 +99,11 @@ function applyLightroomAdjustments(imageData, adj) {
       b -= bl * t * 0.3;
     }
 
-    // Temperature: warm shift adds R, removes B (and vice versa)
     r += temp * 0.10;
     b -= temp * 0.10;
 
-    // Tint: positive pulls toward magenta (less G), negative toward green
     g -= tint * 0.10;
 
-    // Saturation
     if (sat !== 1) {
       const grey = 0.2126 * r + 0.7152 * g + 0.0722 * b;
       r = grey + (r - grey) * sat;
@@ -130,8 +111,6 @@ function applyLightroomAdjustments(imageData, adj) {
       b = grey + (b - grey) * sat;
     }
 
-    // Vibrance — only push pixels that aren't already saturated.
-    // Saturation magnitude proxy: max - min of channels.
     if (vib !== 0) {
       const mx = Math.max(r, g, b);
       const mn = Math.min(r, g, b);
@@ -144,7 +123,6 @@ function applyLightroomAdjustments(imageData, adj) {
       b = grey + (b - grey) * f;
     }
 
-    // Clamp + write back
     d[i]     = Math.max(0, Math.min(255, r * 255));
     d[i + 1] = Math.max(0, Math.min(255, g * 255));
     d[i + 2] = Math.max(0, Math.min(255, b * 255));
@@ -162,7 +140,6 @@ function formatFileSize(bytes) {
   return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
-// ─── Crop overlay (unchanged from previous Image Modifier) ────────────────────
 function CropOverlay({ cropBox, onChange, imgW, imgH }) {
   const dragging = useRef(null);
   const boxRef = useRef(null);
@@ -234,7 +211,6 @@ function CropOverlay({ cropBox, onChange, imgW, imgH }) {
   );
 }
 
-// ─── Sidebar building blocks ─────────────────────────────────────────────────
 function SideSection({ title, icon: Icon, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -305,52 +281,44 @@ function AdjSlider({ label, value, min, max, step = 1, onChange, unit = '', acce
   );
 }
 
-// ─── Main Image Editor ────────────────────────────────────────────────────────
 export default function ImageEditor() {
   const { getToolGradient } = useToolTheme();
   const toolGradient = getToolGradient('/image-editor');
   const { settings } = useSettings();
   const kb = settings?.keybinds ?? {};
 
-  // ── File / source ──────────────────────────────────────────────────────────
   const [file, setFile] = useState(null);
   const [src, setSrc]   = useState(null);
   const [imgDims, setImgDims] = useState({ w: 0, h: 0 });
   const [outputSize, setOutputSize] = useState(null);
 
-  // ── Adjustments ────────────────────────────────────────────────────────────
   const [adjustments, setAdjustments] = useState(DEFAULT_ADJUSTMENTS);
   const [transform, setTransform]     = useState(DEFAULT_TRANSFORM);
   const [activeFilter, setActiveFilter] = useState('none');
 
-  // ── Crop ───────────────────────────────────────────────────────────────────
   const [cropMode, setCropMode] = useState(false);
   const [cropBox, setCropBox]   = useState({ x: 10, y: 10, w: 80, h: 80 });
 
-  // ── Drawing tools ──────────────────────────────────────────────────────────
-  const [tool, setTool]          = useState(null); // null | 'pen' | 'brush' | 'eraser'
+  const [tool, setTool]          = useState(null);
   const [brushSize, setBrushSize] = useState(8);
   const [brushColor, setBrushColor] = useState('#ff3366');
   const [recentColors, setRecentColors] = useState(['#ff3366', '#fbbf24', '#22c55e', '#3b82f6', '#a855f7', '#ffffff', '#000000']);
-  const [drawHistory, setDrawHistory] = useState([]); // ImageData snapshots for undo
-  const [drawRedoStack, setDrawRedoStack] = useState([]); // ImageData snapshots discarded by undo, available for redo
+  const [drawHistory, setDrawHistory] = useState([]);
+  const [drawRedoStack, setDrawRedoStack] = useState([]);
 
-  // ── UI state ───────────────────────────────────────────────────────────────
   const [showOriginal, setShowOriginal] = useState(false);
   const [activeTab, setActiveTab] = useState('adjust');
   const [rendering, setRendering] = useState(false);
 
-  // ── Refs ───────────────────────────────────────────────────────────────────
-  const imgRef        = useRef(null);   // hidden source <img>
-  const baseCanvasRef = useRef(null);   // adjustments canvas (visible)
-  const drawCanvasRef = useRef(null);   // top-layer drawing canvas (visible)
+  const imgRef        = useRef(null);
+  const baseCanvasRef = useRef(null);
+  const drawCanvasRef = useRef(null);
   const containerRef  = useRef(null);
   const dropRef       = useRef(null);
   const renderRafRef  = useRef(null);
   const isDrawingRef  = useRef(false);
   const lastPointRef  = useRef(null);
 
-  // ── File loading ───────────────────────────────────────────────────────────
   const loadFile = (f) => {
     if (!f || !f.type.startsWith('image/')) return;
     setFile(f);
@@ -365,7 +333,6 @@ export default function ImageEditor() {
     setDrawRedoStack([]);
   };
 
-  // ── Render adjustments to base canvas ──────────────────────────────────────
   const renderBase = useCallback(() => {
     const img = imgRef.current;
     const canvas = baseCanvasRef.current;
@@ -385,7 +352,6 @@ export default function ImageEditor() {
     ctx.drawImage(img, 0, 0, W, H);
     ctx.restore();
 
-    // If any Lightroom adjustment is non-default, run the per-pixel pipeline.
     if (!adjustmentsAreDefault(adjustments)) {
       const data = ctx.getImageData(0, 0, W, H);
       applyLightroomAdjustments(data, adjustments);
@@ -413,11 +379,9 @@ export default function ImageEditor() {
     if (draw.height !== imgDims.h) draw.height = imgDims.h;
   }, [imgDims]);
 
-  // ── Drag/drop file pick ────────────────────────────────────────────────────
   const onDrop = (e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) loadFile(f); };
   const onPick = (e) => { const f = e.target.files[0]; if (f) loadFile(f); };
 
-  // ── Adjustment helpers ─────────────────────────────────────────────────────
   const setAdj = (key) => (val) => setAdjustments(prev => ({ ...prev, [key]: val }));
   const setTrn = (key) => (val) => setTransform(prev => ({ ...prev, [key]: val }));
   const rotate = (deg) => setTransform(prev => ({ ...prev, rotation: (prev.rotation + deg + 360) % 360 }));
@@ -431,9 +395,6 @@ export default function ImageEditor() {
     clearDrawing();
   };
 
-  // ── Drawing handlers ───────────────────────────────────────────────────────
-  // Map a pointer event into the underlying canvas coordinate space, regardless
-  // of how the canvas is being scaled by CSS.
   const eventToCanvas = (e) => {
     const canvas = drawCanvasRef.current;
     if (!canvas) return null;
@@ -446,12 +407,6 @@ export default function ImageEditor() {
     };
   };
 
-  // ── Undo / Redo (drawing layer) ─────────────────────────────────────────────
-  // History entries are ImageData snapshots of the draw canvas just BEFORE a
-  // stroke is applied. Capped at 30 entries so memory stays bounded on large
-  // images. A redo stack captures snapshots popped by undo, so the user can
-  // traverse forward again. Any new stroke clears the redo stack (standard
-  // undo/redo semantics).
   const HISTORY_CAP = 30;
 
   const snapshotDrawCanvas = () => {
@@ -468,8 +423,6 @@ export default function ImageEditor() {
     ctx.putImageData(snap, 0, 0);
   };
 
-  // Push a snapshot of the CURRENT draw layer onto the undo stack and clear
-  // the redo stack — call this just before applying a new stroke.
   const pushDrawHistory = () => {
     const snap = snapshotDrawCanvas();
     if (!snap) return;
@@ -594,7 +547,6 @@ export default function ImageEditor() {
     });
   };
 
-  // ── Crop ────────────────────────────────────────────────────────────────────
   const applyCrop = () => {
     const base = baseCanvasRef.current;
     const draw = drawCanvasRef.current;
@@ -623,7 +575,6 @@ export default function ImageEditor() {
     }, file?.type || 'image/png');
   };
 
-  // ── Download (composites everything) ───────────────────────────────────────
   const handleDownload = () => {
     const base = baseCanvasRef.current;
     const draw = drawCanvasRef.current;
@@ -673,10 +624,6 @@ export default function ImageEditor() {
 
   const transformStr = `rotate(${transform.rotation}deg) scaleX(${transform.flipH ? -1 : 1}) scaleY(${transform.flipV ? -1 : 1}) scale(${transform.zoom / 100})`;
 
-  // ── Keybinds ─────────────────────────────────────────────────────────────
-  // Memoised so the hook doesn't tear down/rebuild every render. The useMemo
-  // is keyed on the user's saved bindings so re-mapping in Settings takes
-  // effect without a reload.
   const shortcuts = useMemo(() => {
     if (!src) return {};
     return {
@@ -698,14 +645,10 @@ export default function ImageEditor() {
     { key: 'crop',      label: 'Crop',      icon: Crop    },
   ];
 
-  // The drawing canvas only listens for pointer events when a draw tool is
-  // actually active, otherwise it has pointer-events: none so the user can
-  // interact with the image as before.
   const canvasIsInteractive = !!tool && !cropMode;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      {/* Hero */}
       <section className="relative py-14 sm:py-18 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
@@ -776,7 +719,6 @@ export default function ImageEditor() {
         </div>
       </section>
 
-      {/* Hidden source image — feeds the canvas pipeline. */}
       {src && (
         <img
           ref={imgRef}
@@ -811,7 +753,6 @@ export default function ImageEditor() {
         </label>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-          {/* ── Canvas panel ────────────────────────────────────────────────── */}
           <div className="space-y-4">
             {/* Toolbar */}
             <div className="glass-card rounded-xl p-3 flex items-center gap-2 flex-wrap">
@@ -911,7 +852,6 @@ export default function ImageEditor() {
               )}
             </div>
 
-            {/* Image info bar */}
             <div className="glass-card rounded-xl p-3 flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
               <span className="font-medium text-foreground truncate max-w-48">{file?.name}</span>
               <span>{formatFileSize(file?.size)} original</span>
@@ -930,7 +870,6 @@ export default function ImageEditor() {
             )}
           </div>
 
-          {/* ── Sidebar ─────────────────────────────────────────────────────── */}
           <div className="space-y-3">
             <div className="glass-card rounded-xl p-1 flex gap-1 overflow-x-auto">
               {TABS.map(tab => {

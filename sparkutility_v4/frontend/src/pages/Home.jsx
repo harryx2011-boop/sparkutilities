@@ -301,7 +301,6 @@ export default function Home() {
 
   return (
     <div className="relative overflow-x-hidden">
-      {/* HERO */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 text-center overflow-hidden">
         <GradientBlob className="w-[600px] h-[600px] bg-violet-600/20 -top-32 -left-48" />
         <GradientBlob className="w-[500px] h-[500px] bg-cyan-500/15 top-1/3 -right-40" />
@@ -393,10 +392,8 @@ export default function Home() {
         </motion.button>
       </section>
 
-      {/* ACTIVITY */}
       <ActivitySection />
 
-      {/* PORTFOLIO */}
       <section ref={portfolioRef} className="relative px-4 pb-24 pt-8">
         <div className="max-w-5xl mx-auto mb-12 text-center">
           <motion.p
@@ -426,7 +423,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FLUXKIT SECTION */}
       <section className="relative px-4 pb-24">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -451,7 +447,6 @@ export default function Home() {
               style={{ background: 'linear-gradient(90deg, #FACC15, #92400E 60%, transparent)' }} />
 
             <div className="relative z-10 p-8 md:p-12">
-              {/* Header */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                 <div>
                   <p className="text-xs font-semibold tracking-[0.25em] uppercase mb-2"
@@ -481,7 +476,6 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Category chips */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { icon: Database,    label: 'Data & Structure',   desc: 'JSON · XML · CSV · YAML · SQL',        path: '/fluxkit/data-structure'  },

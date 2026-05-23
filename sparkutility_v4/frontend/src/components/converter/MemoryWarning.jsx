@@ -3,10 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
 import { subscribeMemoryPressure } from '@/lib/memoryMonitor';
 
-/**
- * Displays a dismissible banner when JS heap usage exceeds safe thresholds.
- * Uses the same glass-card / UI vocabulary as the rest of the app.
- */
 export default function MemoryWarning() {
   const [pressure, setPressure] = useState('ok');
   const [dismissed, setDismissed] = useState(false);
@@ -14,13 +10,11 @@ export default function MemoryWarning() {
   useEffect(() => {
     const unsub = subscribeMemoryPressure((level) => {
       setPressure(level);
-      // Re-surface the banner if we go from warn→critical
       if (level === 'critical') setDismissed(false);
     });
     return unsub;
   }, []);
 
-  // Reset dismissed state when pressure drops back to ok
   useEffect(() => {
     if (pressure === 'ok') setDismissed(false);
   }, [pressure]);

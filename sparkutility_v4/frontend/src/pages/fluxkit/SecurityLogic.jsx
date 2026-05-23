@@ -8,13 +8,11 @@ import {
 import bcrypt from 'bcryptjs';
 import FluxBackdrop from '@/components/fluxkit/FluxBackdrop';
 
-/* ─── Design tokens ─────────────────────────────────────────────────────────── */
 const FH   = { fontFamily: '"Cormorant Garamond","Georgia",serif', fontWeight: 700, letterSpacing: '-0.02em' };
 const FB   = { fontFamily: '"Montserrat","Inter",sans-serif' };
 const FM   = { fontFamily: '"JetBrains Mono",monospace' };
 const GOLD = '#FACC15';
 
-/* ─── Shared primitives ─────────────────────────────────────────────────────── */
 function useCopy(timeout = 1800) {
   const [copied, setCopied] = useState(false);
   const copy = useCallback((text) => {
@@ -113,7 +111,6 @@ function ActionBtn({ onClick, icon: Icon, label, disabled, loading }) {
   );
 }
 
-/* ─── 1. JWT Debugger ────────────────────────────────────────────────────────── */
 function base64urlDecode(str) {
   const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
   const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
@@ -166,7 +163,6 @@ function JWTDebugger() {
             style={{ ...FM, fontSize: '0.75rem', lineHeight: '1.6', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#F5F0E8', caretColor: GOLD }} />
         </div>
 
-        {/* Colour-coded token display */}
         {token.trim() && (
           <div className="rounded-xl px-4 py-3 overflow-x-auto" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <p style={{ ...FM, fontSize: '0.72rem', lineHeight: '1.7', wordBreak: 'break-all' }}>
@@ -230,7 +226,6 @@ function JWTDebugger() {
   );
 }
 
-/* ─── 2. Regex Tester ────────────────────────────────────────────────────────── */
 const FLAG_LIST = ['g', 'i', 'm', 's', 'u'];
 
 function escapeHtml(str) {
@@ -288,7 +283,6 @@ function RegexTester() {
   return (
     <ToolPanel title="Regex Tester" icon={Search} code="regex.test()" chips={['Real-time match','Capture groups','Flags','Highlighting']}>
       <div className="mt-4 space-y-4">
-        {/* Pattern input */}
         <div className="flex flex-col gap-1.5">
           <span style={{ ...FM, fontSize: '0.65rem', color: 'rgba(200,190,170,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Pattern</span>
           <div className="flex items-center rounded-xl overflow-hidden" style={{ border: `1px solid ${error ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}`, background: 'rgba(255,255,255,0.03)' }}>
@@ -300,7 +294,6 @@ function RegexTester() {
           </div>
         </div>
 
-        {/* Flags */}
         <div className="flex flex-wrap gap-2">
           {FLAG_LIST.map(f => (
             <button key={f} onClick={() => toggleFlag(f)}
@@ -312,7 +305,6 @@ function RegexTester() {
           <span style={{ ...FM, fontSize: '0.6rem', color: 'rgba(200,190,170,0.3)', alignSelf: 'center', marginLeft: '4px' }}>g=global  i=case-insensitive  m=multiline  s=dotAll  u=unicode</span>
         </div>
 
-        {/* Test string */}
         <div className="flex flex-col gap-1.5">
           <span style={{ ...FM, fontSize: '0.65rem', color: 'rgba(200,190,170,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Test String</span>
           <textarea value={testStr} onChange={e => setTestStr(e.target.value)} rows={4} spellCheck={false}
@@ -322,7 +314,6 @@ function RegexTester() {
 
         {error && <StatusBanner type="error" message={`Regex error: ${error}`} />}
 
-        {/* Highlighted output */}
         {result && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -370,7 +361,6 @@ function RegexTester() {
   );
 }
 
-/* ─── 3. Cron Job Expression Parser ─────────────────────────────────────────── */
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOW_FULL   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
@@ -500,7 +490,6 @@ function CronParser() {
           </div>
         )}
 
-        {/* Field labels */}
         <div className="grid grid-cols-5 gap-1">
           {['Minute\n0–59', 'Hour\n0–23', 'Day\n1–31', 'Month\n1–12', 'Weekday\n0–6'].map((label, i) => (
             <div key={i} className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -511,7 +500,6 @@ function CronParser() {
           ))}
         </div>
 
-        {/* Presets */}
         <div>
           <p style={{ ...FM, fontSize: '0.65rem', color: 'rgba(200,190,170,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Common presets</p>
           <div className="flex flex-wrap gap-2">
@@ -542,7 +530,6 @@ function CronParser() {
   );
 }
 
-/* ─── 4. Bcrypt Hash Generator / Checker ─────────────────────────────────────── */
 function BcryptTool() {
   const [tab, setTab]       = useState('generate');
   const [password, setPwd]  = useState('');
@@ -590,7 +577,6 @@ function BcryptTool() {
       <div className="mt-4 space-y-4">
         <StatusBanner type="info" message="Runs 100% in-browser using bcryptjs. Passwords and hashes never leave your device." />
 
-        {/* Tabs */}
         <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid rgba(250,204,21,0.2)', display: 'inline-flex' }}>
           {[{ id: 'generate', label: 'Generate' }, { id: 'verify', label: 'Verify' }].map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); setResult(null); }}
@@ -661,7 +647,6 @@ function BcryptTool() {
   );
 }
 
-/* ─── 5. HTML Entity Encoder / Decoder ────────────────────────────────────────── */
 const NAMED_ENTITIES = {
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   '©': '&copy;', '®': '&reg;', '™': '&trade;', '€': '&euro;',
@@ -675,7 +660,6 @@ function encodeEntities(str) {
   return str.replace(ENTITY_RE, ch => NAMED_ENTITIES[ch] || ch);
 }
 
-// Pure string decoder — no innerHTML, no XSS surface
 const DECODE_MAP = Object.fromEntries(Object.entries(NAMED_ENTITIES).map(([ch, ent]) => [ent, ch]));
 function decodeEntities(str) {
   return str
@@ -766,7 +750,6 @@ function HTMLEntityTool() {
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────────────────────── */
 export default function SecurityLogic() {
   return (
     <div style={{ minHeight: 'calc(100vh - 4rem)', background: '#050505' }}>
@@ -784,7 +767,6 @@ export default function SecurityLogic() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20">
 
-        {/* Breadcrumb */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="flex items-center gap-1.5 mb-10"
           style={{ ...FB, fontSize: '0.75rem', color: 'rgba(200,190,170,0.4)' }}>
@@ -794,7 +776,6 @@ export default function SecurityLogic() {
           <span>Security &amp; Logic</span>
         </motion.div>
 
-        {/* Badge */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm mb-8"
           style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.25)', ...FM, fontSize: '0.68rem', color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
@@ -802,7 +783,6 @@ export default function SecurityLogic() {
           Security &amp; Logic
         </motion.div>
 
-        {/* Headline */}
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
           style={{ ...FH, fontSize: 'clamp(2.2rem,6vw,4.5rem)', lineHeight: 1.05, color: '#F5F0E8', marginBottom: '1rem' }}>
@@ -815,7 +795,6 @@ export default function SecurityLogic() {
           Five security and logic tools — JWT decoding, regex testing, cron parsing, bcrypt hashing, and HTML entity conversion. All local, all private.
         </motion.p>
 
-        {/* Divider */}
         <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }}
           transition={{ duration: 0.5, delay: 0.25 }} className="flex items-center gap-4 mb-12" style={{ transformOrigin: 'left' }}>
           <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg,rgba(250,204,21,0.3),transparent)' }} />
@@ -823,7 +802,6 @@ export default function SecurityLogic() {
           <div className="h-px w-16" style={{ background: 'rgba(250,204,21,0.1)' }} />
         </motion.div>
 
-        {/* Tools */}
         <div className="space-y-4">
           {[JWTDebugger, RegexTester, CronParser, BcryptTool, HTMLEntityTool].map((Tool, i) => (
             <motion.div key={i}
@@ -835,7 +813,6 @@ export default function SecurityLogic() {
           ))}
         </div>
 
-        {/* Footer note */}
         <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           transition={{ delay: 0.15 }} className="mt-12 text-center">
           <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-xl"

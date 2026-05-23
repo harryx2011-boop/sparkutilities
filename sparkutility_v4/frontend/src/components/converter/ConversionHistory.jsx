@@ -29,7 +29,6 @@ export default function ConversionHistory({ history, onClear }) {
     }));
   };
 
-  // Compute stats over the full persistent history
   const totalMB = history.reduce((acc, item) => acc + (item.originalSize || 0), 0) / (1024 * 1024);
   const formatCounts = {};
   history.forEach(item => {
@@ -55,7 +54,6 @@ export default function ConversionHistory({ history, onClear }) {
         </Button>
       </div>
 
-      {/* Stats bar */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground bg-secondary/20 rounded-lg px-3 py-2 mb-3">
         <span className="flex items-center gap-1.5">
           <TrendingUp className="w-3 h-3" />
@@ -77,7 +75,6 @@ export default function ConversionHistory({ history, onClear }) {
         )}
       </div>
 
-      {/* Entry list */}
       <div className="space-y-2">
         <AnimatePresence>
           {history.map((item) => {

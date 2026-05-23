@@ -11,8 +11,6 @@ import { Upload, X, Search, Replace, Type, Hash, Download,
   AlertCircle, Loader2, RotateCcw, Copy, Check,
 } from 'lucide-react';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
 function formatSize(bytes) {
   if (!bytes) return '—';
   if (bytes < 1024) return `${bytes} B`;
@@ -65,7 +63,6 @@ async function extractText(file, ext) {
   return { text, readOnly: false };
 }
 
-// ── LineNumbers component ────────────────────────────────────────────────────
 
 function LineNumbers({ text, lineHeight = 21 }) {
   const lines = text.split('\n');
@@ -80,7 +77,6 @@ function LineNumbers({ text, lineHeight = 21 }) {
   );
 }
 
-// ── FindReplace bar ──────────────────────────────────────────────────────────
 
 function FindReplaceBar({ text, onTextChange, onClose }) {
   const [find, setFind] = useState('');
@@ -140,7 +136,6 @@ function FindReplaceBar({ text, onTextChange, onClose }) {
   );
 }
 
-// ── Main component ───────────────────────────────────────────────────────────
 
 export default function DocumentEditor() {
   const [file, setFile] = useState(null);
@@ -209,7 +204,6 @@ export default function DocumentEditor() {
   const stats = useMemo(() => ({ words: countWords(text), chars: text.length, lines: countLines(text) }), [text]);
   const ext = file ? getExt(file.name) : '';
 
-  // ── Keyboard shortcut for find/replace ──────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'f' && file) {
@@ -225,7 +219,6 @@ export default function DocumentEditor() {
 
   return (
     <div className={`rounded-2xl glass-card border border-border/40 overflow-hidden ${expanded ? 'fixed inset-4 z-50 shadow-2xl' : ''}`}>
-      {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b border-border/30 bg-secondary/20">
         <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
           <Type className="w-5 h-5 text-primary" />
@@ -293,7 +286,6 @@ export default function DocumentEditor() {
         )}
       </div>
 
-      {/* Find & replace */}
       <AnimatePresence>
         {showFindReplace && file && !readOnly && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
@@ -302,7 +294,6 @@ export default function DocumentEditor() {
         )}
       </AnimatePresence>
 
-      {/* Body */}
       {!file && !loading && (
         <div
           onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
@@ -331,7 +322,6 @@ export default function DocumentEditor() {
 
       {file && !loading && (
         <div className="flex flex-col" style={{ height: editorHeight }}>
-          {/* Status bar */}
           <div className="flex items-center justify-between px-3 py-1 border-b border-border/20 bg-secondary/10 text-[10px] text-muted-foreground flex-shrink-0">
             <div className="flex items-center gap-3">
               <span className="uppercase font-mono opacity-70">{ext}</span>
@@ -345,7 +335,6 @@ export default function DocumentEditor() {
             </div>
           </div>
 
-          {/* Editor area */}
           <div className="flex flex-1 overflow-hidden font-mono text-xs">
             {showLineNumbers && (
               <div className="overflow-hidden flex-shrink-0" style={{ overflowY: 'auto' }}>
@@ -365,7 +354,6 @@ export default function DocumentEditor() {
         </div>
       )}
 
-      {/* Drag overlay */}
       {file && isDragging && (
         <div className="absolute inset-0 bg-primary/10 border-2 border-dashed border-primary rounded-2xl flex items-center justify-center pointer-events-none z-10">
           <p className="text-sm font-medium text-primary">Drop to replace file</p>
